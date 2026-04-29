@@ -1,5 +1,7 @@
 # Pella — Algorithmic Trading Research & Backtesting Pipeline
 
+![status](https://img.shields.io/badge/status-active-brightgreen) ![platforms](https://img.shields.io/badge/platforms-MT5%20%7C%20NT8-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+
 **An end-to-end pipeline for designing, backtesting, and validating systematic trading strategies across MetaTrader 5 and NinjaTrader 8, with cross-platform validation as a hard gate before deployment.**
 
 Codename **Pella** — after Alexander the Great's birthplace. Short, memorable, and a reminder that strategy is the asset; the venue is just where you fight.
