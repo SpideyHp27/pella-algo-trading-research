@@ -1,0 +1,35 @@
+# Build artifacts
+*.ex5
+*.ex4
+*.dll
+*.exe
+*.obj
+*.bin
+bin/
+obj/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Logs
+*.log
+
+# Local-only — never commit
+local/
+private/
+.secret
+*.env
