@@ -122,3 +122,54 @@ Things I learned the hard way, in case I (or someone else) build something simil
 - Once any single strategy passes all 7 gates on one platform, take it into cross-validation on the other.
 
 The goal for this month is not a winning strategy. The goal is a working pipeline I can throw any new idea at. Once the pipeline is clean, the strategy hunt becomes the easy part.
+
+---
+
+# 2026-05-01 — Sweep day
+
+## Headline
+
+- **5 candidates passing PF gates** across XAUUSD + USDJPY: Gen_Breakout (×2), ChannelBreakoutVIP (×2), GoldTrendBreakout, TuesdayTurnaroundNDX.
+- **First Monte Carlo-validated candidate:** ChannelBreakoutVIP_MT5 XAUUSD H1. p95 max DD = 6.7%, 100% probability profitable across 5,000 bootstrap simulations. Real edge, not order-luck.
+- **4 new strategies ported** from Street Smarts (Raschke/Connors 1995): IDNR4 (vol-expansion OCO), TurtleSoup (fades Donchian breakouts), Holy Grail (ADX-retrace pullback), 80/20's (day-trade reversal). Catalog written.
+- **Cross-asset confirmation** for both top candidates: Gen_Breakout works on USDJPY AND XAUUSD with the same parameters. ChannelBreakoutVIP same. That's the robustness signal.
+- **Bridge dropdown bug fixed** — diagnosed that `CB_SETCURSEL` doesn't fire `CBN_SELCHANGE` (Win32 treats programmatic combo selection as synthetic). Patched, built v0.44, staged.
+
+## What's in the candidate pool now
+
+| Strategy | Asset | TF | PF | Asymm | Notes |
+|---|---|---|---|---|---|
+| Gen_Breakout | USDJPY | H1 | 1.20 | — | Both directions |
+| Gen_Breakout | XAUUSD | H1 | ~1.15 | 1.83× | Cross-asset confirmed |
+| ChannelBreakoutVIP_MT5 | USDJPY | H1 | 1.40 | 1.99× | Long-only Donchian |
+| ChannelBreakoutVIP_MT5 | XAUUSD | H1 | 1.63 | 2.34× | **MC validated p95 DD 6.7%** |
+| GoldTrendBreakout_MT5 | XAUUSD | H1 | 1.64 | 2.44× | Best asymmetry on the platform |
+| TuesdayTurnaroundNDX | XAUUSD | H1 | 1.48 | 1.06× | Pattern/seasonality archetype — fundamentally different mechanism |
+
+The TuesdayTurnaround line is the most strategically valuable. Every other passing strategy is some flavor of long-only trend-follower; they will correlate hard. TuesdayTurnaround's high-WR / low-asymmetry signature is structurally different and should provide real portfolio diversification when correlated.
+
+## Cross-timeframe study (GoldTrendBreakout XAUUSD)
+
+| TF | Trades | WR | PF | Verdict |
+|---|---|---|---|---|
+| M15 | 1,567 | 31.84% | 1.19 | Below PF gate |
+| **H1** | **368** | **40.22%** | **1.64** | Goldilocks |
+| H4 | 91 | 46.15% | 3.05 | Above PF gate, below 100-trade gate |
+
+The shape — better PF going up in TF, worse going down — is the textbook signature of a real trend-following edge. H1 is the deployable timeframe; M15 too noisy, H4 too thin.
+
+## Tools shipped
+
+1. **Monte Carlo gate** (`monte_carlo.py`). Pipeline v1.3 Gate 6 implementation. Shuffle + bootstrap modes, 5,000+ runs, gates verdict at p95 DD vs 25%. First strategy through it: ChannelBreakoutVIP XAUUSD = PASS.
+2. **Street Smarts catalog** at `docs/StreetSmarts_catalog.md`. Read the book, extracted 9 mechanical strategies, port-priority ranked by what fills gaps in the existing portfolio (which is heavy on long-only Donchian).
+3. **Paper-trade plan** (deferred) at `docs/paper_trade_plan.md`. Design doc covering broker bucket architecture (3 demo accounts), 6-8 week soak window, kill/keep gates from Pipeline v1.3 Gate 8.
+4. **Bridge v0.44 with sticky-dropdown fix.** Built, staged, awaiting next safe MT5 close to deploy.
+
+## Lessons from today
+
+1. **MT5 Optimization mode is a disk bomb.** Twice in 24 hours: Strategy Tester defaulted to optimization mode, fanned across all Market Watch FX symbols, ran out of disk inside 15 minutes. Always verify Optimization=Disabled before clicking Start.
+2. **NDAQ ≠ NASDAQ-100.** NDAQ is Nasdaq Inc the company stock (~$91/share). NDX is the actual index (~27,775). Wrong-symbol backtests run for 10 seconds with 0 trades and look like data quality issues.
+3. **Bootstrap MC misleads on low-N samples.** With 32 trades and one large outlier, "35% prob unprofitable" is statistical artifact of small N + skewed distribution, NOT a verdict on the strategy.
+4. **Trailing stop matters for vol-expansion strategies.** Profitable positions revert through original SL without one. Catastrophic win rate (3% on IDNR4 v0.1) was the visible symptom.
+5. **Cross-asset > cross-TF for portfolio diversity.** TuesdayTurnaround running on H1, H4, M15 produces literally identical trades because it's clock-driven (16:30 entry) — one slot, not three.
+6. **Discord mentorship works when you bring substance.** Real builders share daily P/L for correlation checks. Asking for code gets ignored; asking about process gets answers.
