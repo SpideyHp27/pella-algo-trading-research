@@ -754,4 +754,39 @@ Ran 6 specs (NDX, XAUUSD, USDJPY × fixed/percent-risk) in 28.1 min via CLI runn
 
 ## IDNR4_MT5 v0.3 SPEC drafted
 
-Wrote `strategies/IDNR4_MT5/SPEC_v0.3_percentrisk.md` to add the same UseRiskPercent / RiskPercent / MaxLotsCap pattern that ChannelBreakoutVIP_MT5 v0.2 uses. SPEC awaiting review before CODEGEN.
+Wrote `strategies/IDNR4_MT5/SPEC_v0.3_percentrisk.md` to add the same UseRiskPercent / RiskPercent / MaxLotsCap pattern that ChannelBreakoutVIP_MT5 v0.2 uses.
+
+## IDNR4 v0.3 CODEGEN + bug + fix + validation
+
+Wrote v0.3 patch (additive: 3 inputs + ComputeLotSize helper + posDynamicLots state). Compiled 0 errors via metaeditor64.exe CLI.
+
+First validation run produced bit-identical results between FIXED and PCT 1% — a red flag. **Diagnosis:** I swapped OrderCalcProfit's open/close arguments (`slPrice, entryPrice` instead of `entryPrice, slPrice`). For a long with entry > SL, that returns POSITIVE profit, my `lossPerLot = -profit` check then rejects as `<= 0`, falls back to fixed Lots — silently masquerading as backward-compat success. **Fix:** swap args back. Recompiled, re-ran.
+
+Post-fix XAUUSD H1 results:
+- FIXED: 176 trades, $65,887, Sharpe 0.851 (matches v0.2 byte-for-byte = backward-compat verified)
+- PCT 1%: 173 trades, $85,346 (+30%), Sharpe 0.951, MaxDD 11.6%, MC p95 16.2%
+
+Sharpe still misses the 1.0 gate on H1 by 0.05 — but the v0.3 patch itself meets every SPEC acceptance criterion.
+
+**Lesson:** when a code change is supposed to alter behavior and the result IS bit-identical to baseline, treat it as a bug not a success. Bit-identical = "the new path didn't fire" 90% of the time.
+
+## Timeframe robustness batch (M15/H4/D1)
+
+Ran 7 specs in 14.5 min. Surviving portfolio went from 4 to 5.
+
+| Strategy | TF | Sharpe | Note |
+|---|---|---|---|
+| ChBVIP USDJPY M15 | M15 | 0.76 | DD blows 25% gate (2782 trades, signal too noisy) |
+| ChBVIP USDJPY H4  | H4  | 0.97 | near-miss — graceful degradation, not collapse |
+| ChBVIP XAUUSD M15 | M15 | 1.10 | PF 1.19 below 1.3 gate |
+| ChBVIP XAUUSD H4  | H4  | 0.94 | near-miss |
+| TT NDX H4         | H4  | 1.28 | **bit-identical to H1** (TT is clock-time-based, TF-agnostic) |
+| IDNR4 XAUUSD D1   | D1  | 0.83 | thin trade count, PF 1.64 |
+| **IDNR4 XAUUSD H4** | **H4** | **1.10** | **PASSES all 6 gates ← NEW deployment-grade** |
+
+Three findings:
+1. **IDNR4 H4 is the new graduate.** Sharpe 1.10, PF 1.96, RF 8.32, MC p95 14.4%. Final $91,426. Street Smarts authors specified daily-bar but H4 is sweet spot.
+2. **TT NDX is timeframe-agnostic** because entries are clock-time-based. H1=H4 bit-identical.
+3. **ChBVIP H1 is real, not a curve fit.** H4 holds Sharpe ~0.95 (graceful), M15 collapses (noise). H1 is peak but neighboring TFs don't break.
+
+**Updated surviving Pella portfolio: 5 deployment-grade specs across 3 strategies × 3 asset classes (FX major, FX metal, US equity index).**
