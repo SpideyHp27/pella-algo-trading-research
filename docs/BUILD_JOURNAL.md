@@ -733,3 +733,25 @@ Output dir: `NT8Bridge/Results/cli_validation/<timestamp>/` containing scoreboar
 3. Look-ahead bias audit on each EA's MQL5 source (Chan AT requirement).
 4. Cross-pair correlation matrix on the 4 surviving runs to confirm diversification stays intact post-percent-risk.
 5. Bridge sticky-dropdown can wait — the CLI pipeline is now the standard path for batch validation.
+
+## TuesdayTurnaroundNDX cross-symbol validation (later this evening)
+
+Ran 6 specs (NDX, XAUUSD, USDJPY × fixed/percent-risk) in 28.1 min via CLI runner. EA already had `InpUseMoneyManagement` toggle — no code change.
+
+| Spec | Trades | PF | Sharpe | MaxDD | MC p95 DD | Final$ | Verdict |
+|---|---|---|---|---|---|---|---|
+| TT NDX FIXED  | 163 | 2.28 | 1.528 | 0.33% | 0.5%  | $63,536  | **PASS** |
+| TT NDX PCT 1% | 163 | 2.10 | 1.275 | 4.16% | 6.2%  | **$178,671** | **PASS** |
+| TT XAUUSD FIXED | 141 | 1.50 | 0.568 | 6.30% | 13.4% | $57,265  | shelve |
+| TT XAUUSD PCT 1% | 141 | 1.49 | 0.552 | 3.33% | 6.9%  | $53,514  | shelve |
+| TT USDJPY FIXED | 142 | 1.39 | 0.559 | 1.37% | 2.7%  | $51,458  | shelve |
+| TT USDJPY PCT 1% | 142 | 1.39 | 0.559 | 0.14% | 0.3%  | $50,144  | shelve |
+
+**Findings:**
+1. TT is a true home-asset strategy. NDX = clean PASS on all 6 gates both modes. XAUUSD/USDJPY have no edge (p-IID < 0.10, not significant).
+2. **Percent-risk paradox on NDX:** ending balance $63k → **$179k** (+257%) but Sharpe drops 1.528 → 1.275. Mechanism: low-frequency rare-but-large weekly bets means variance grows faster than mean as size compounds. Both modes still pass the 1.0 gate. Pick by deployment objective.
+3. Confirmed surviving Pella portfolio: ChBVIP USDJPY PCT (Sh 1.45), ChBVIP XAUUSD PCT (Sh 1.74), TT NDX FIXED (Sh 1.53) or TT NDX PCT (Sh 1.27, Final $179k).
+
+## IDNR4_MT5 v0.3 SPEC drafted
+
+Wrote `strategies/IDNR4_MT5/SPEC_v0.3_percentrisk.md` to add the same UseRiskPercent / RiskPercent / MaxLotsCap pattern that ChannelBreakoutVIP_MT5 v0.2 uses. SPEC awaiting review before CODEGEN.
