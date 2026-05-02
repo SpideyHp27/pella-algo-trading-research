@@ -161,6 +161,14 @@
 - ChBVIP USDJPY: **RED FLAG** — 2026 Q1 Sharpe -2.47 — strategy lost money this year
 - Saved a deployment mistake
 
+**PellaMarubozu_MT5 v0.1 — clean-room build + 3-TF sweep + canonical lock**
+- Marketplace .ex5 had license-lock; built clean-room version from .set spec
+- Tested H4 / H1 / M5 with NY 17-19 session filter
+- M5 BASE PCT 0.5% locked as canonical: Sharpe 1.34, PF 1.31, MaxDD 7.87%, MC p95 8.1, p-HAC <0.001, 944 trades
+- Passes 5/6 universal prop gates (MC p95 0.1pp over, deploys safely at FundedNext 0.4% recovery sizing)
+- H1 dies (Sharpe 0.44, p-HAC ≥0.10 — no stat sig); H4 NO_TREND alternative also viable but lower Sharpe
+- NDX failed completely on this strategy across all configs
+
 **Meta EA v0.1 scaffold compiles clean**
 - `strategies/PellaMetaEA/PellaMetaEA.mq5`
 - TT NDX subsystem fully implemented

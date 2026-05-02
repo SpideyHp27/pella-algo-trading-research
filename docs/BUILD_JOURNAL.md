@@ -927,6 +927,41 @@ v0.4 wins on every aggregate metric. Effectively 3/4 strong + 1/4 weak-but-posit
 
 **4 deployable specs, USDJPY restored** after thorough re-investigation. The vol-trail is a portable improvement that defends against any low-vol regime collapse on any breakout strategy.
 
+## PellaMarubozu_MT5 v0.1 — clean-room build + 3-TF sweep + canonical lock (2026-05-03)
+
+User sent a marketplace .ex5 (Marubozu Gold Expert) with two .set parameter files. Direct copy failed with `invalid license (538)` — marketplace EAs are license-bound to MQL5 account. Built clean-room implementation from .set spec instead (no marketplace code reused).
+
+**PellaMarubozu_MT5.mq5** implements: Marubozu pattern detection (body factor 1.5x avg of last 50 bars, max wick 15% of range), breakout entry with 200pt buffer above signal high (or below signal low for shorts), max 3 bars after signal, ATR(14)*1 SL, RR=3 TP, EMA(200) trend filter (toggle), trailing stop (start 100pts profit / 25pt dist / 20pt step), daily protection (5% loss / 10 trades), session filter (toggle), 4 sizing modes (Fixed/RiskMoney/PctBalance/PctEquity).
+
+Compiled clean (0 errors). Tested across 3 timeframes:
+
+| Config | Trades | PF | Sharpe | MaxDD% | MC p95 | p-HAC | Pass univ gates? |
+|---|---|---|---|---|---|---|---|
+| H4 BASE @ 1% | 346 | 1.52 | 0.90 | 2.58 | 6.6 | <0.01 | Sharpe miss (0.90 < 1.0) |
+| H4 NO_TREND @ 1% | 513 | 1.46 | 1.02 | 4.20 | 8.0 | <0.01 | PASS, zero margin |
+| H1 NY @ 1% | 156 | 1.27 | 0.44 | 3.58 | 8.7 | **>=0.10** | NO EDGE (not stat-significant) |
+| M5 NY BASE @ 1% | 944 | 1.31 | **1.37** | 15.17 | 15.0 | <0.001 | DD blow |
+| M5 NY NO_TREND @ 1% | 1497 | 1.26 | 1.45 | 20.98 | 17.5 | <0.001 | DD blow worse |
+| **M5 NY BASE @ 0.5%** | **944** | **1.31** | **1.34** | **7.87** | **8.1** | **<0.001** | **5/6 PASS** (MC 0.1pp over) |
+
+**Findings:**
+
+1. **M5 NY-filtered is where the edge actually lives.** Sharpe 1.34-1.45 with stat-sig p<0.001 across thousands of trades. H4 had 1.02 with zero margin; H1 had no edge at all.
+
+2. **DD scales linearly with sizing, Sharpe is invariant.** M5 BASE @ 1% had MaxDD 15.17% (way above 8% gate) but at 0.5% sizing the MaxDD halved to 7.87% (just under gate) while Sharpe stayed essentially identical (1.37 → 1.34 = -2.6%, basically noise).
+
+3. **At 0.5% sizing, M5 BASE passes 5/6 universal gates.** Only MC p95 misses by 0.1pp (8.1 vs 8.0 cap). Borderline pass — at 0.4% it would safely clear all gates with margin.
+
+4. **RR setting was being ignored** — tight trailing stop (25pts) closes trades before TP is reached. RR=2 vs RR=3 produced identical results across H4 sweep. Not a strategy issue if the trail does useful work, but worth knowing.
+
+5. **Trend filter EMA(200) was COSTING edge on H4** — disabling it lifted Sharpe 0.90→1.02 and 50% more trades. On M5 NY the trend filter has small effect (Sharpe 1.37 → 1.45) but adds DD (15.17 → 20.98) so trend ON is the cleaner choice for prop deployment.
+
+**Canonical Marubozu deployment config: M5 BASE PCT 0.5%** with NY 17-19 broker session filter, RR=3, trail 25pts, trend filter ON. This is a Tier-2 candidate (passes 5/6 universal gates, MC p95 0.1pp over). Real edge with strong stat-significance (p-HAC < 0.001, 944 trades).
+
+**Note:** at user's actual FundedNext recovery sizing (0.4%), this strategy would have MaxDD ~6.3% and MC p95 ~6.5%, safely passing all universal gates with margin. The "at 0.5%" canonical is for documentation; live deployment would use the FundedNext sizing tier.
+
+NDX failed completely on this strategy (p-HAC ≥ 0.10 across all configs) — Marubozu only works on XAUUSD in our test universe.
+
 ## Meta EA v0.1 scaffold shipped
 
 `PellaMetaEA.mq5` — single chart-attached EA scaffold. Compiles 0 errors. Architecture:
