@@ -610,3 +610,71 @@ C: drive bounced today: 22 → 16 → 1.5 → 16 → 7.1 → 16 → 21 → 26 GB
 3. Continue QDM + Dukascopy import (user was on this)
 4. Bridge v0.44 deploy (next safe MT5 close)
 5. If 2+ new strategies pass, start correlation matrix work (now we'd have 8-9 candidates)
+
+---
+
+# 2026-05-02 — Pipeline v1.3 validation: 12 backtests, full IS/OOS + cost-stress
+
+## Headline
+
+**Validation cycle complete on 4 strategy-asset candidates.** 12 manual MT5 backtests + 7 Monte Carlo runs + correlation matrix.
+
+**One Tier-1 deployment-ready strategy identified:** `ChannelBreakoutVIP_MT5 USDJPY H1`. The only candidate passing every gate including IS phase. Three Tier-2 strategies pass full-window + cost stress + OOS but fail IS phase — they're regime-conditional on 2024+ market state.
+
+## Final scoreboard (deployment readiness)
+
+| Strategy | Asset | Full PF | IS PF | OOS PF | Cost-stress PF | Tier |
+|---|---|---|---|---|---|---|
+| ChannelBreakoutVIP_MT5 | USDJPY H1 | 1.40 | **1.42** ✅ | **1.29** ✅ | 1.38 ✅ | **TIER 1** |
+| ChannelBreakoutVIP_MT5 | XAUUSD H1 | 1.63 | 1.19 | 2.02 | 1.59 | TIER 2 |
+| TuesdayTurnaroundNDX | XAUUSD H1 | 1.48 | 1.14 | 1.76 | 1.51 | TIER 2 |
+| TuesdayTurnaroundNDX | USDJPY H1 | 1.37 | 1.13 | 1.88 | 1.41 | TIER 2 |
+
+## Bridge story
+
+- **My v0.44 dropdown-fix patch did NOT actually fix the sticky-dropdown bug.** Verified empirically — set the Expert via bridge, dropdown still showed previous EA. The CBN_SELCHANGE notification I added wasn't enough; MT5 must listen for some other signal. Real fix deferred to a Spy++ analysis session.
+- Bridge IS reliable for: dates, modelling, delays, and Start button. Used those throughout the 12 runs.
+- Symbol and Expert dropdowns: required manual user click on every test. ~30 sec per swap, ~6 swaps total = ~3 min total manual work across the session.
+- Bridge crashed once mid-session (WinError 10054) — recovered by reattaching BridgeEA. No data loss.
+
+## Cost-stress methodology change
+
+- Discovered MT5 build 5833 doesn't expose Spread setting in "Every tick based on real ticks" mode (real-tick spread comes from tick data itself).
+- Pivoted to using `Delays = "Random delay"` as a cost-stress proxy — simulates execution slippage instead of fixed spread.
+- Different vector but legitimate stress: tests robustness to per-trade execution friction.
+- All 4 candidates passed with PF decay 0-4% (some even improved slightly under delay simulation).
+
+## Surprising findings
+
+1. **Three of four candidates failed IS phase.** Their full-window passes were carried by 2024-2026 regime alone. A discipline I should apply going forward: always check IS-only PF as primary gate, not full-window.
+2. **TuesdayTurnaround USDJPY OOS was the cleanest single test of the project** (95.1% MC prob+, 0.66% max DD, even bootstrap p05 positive). Only 50 trades though — sample size is the caveat.
+3. **HolyGrail v0.4 direction-filter fix** (replacing +DI/-DI with iClose vs EMA(50)) did NOT solve the 6L/73S short bias on XAUUSD. The strategy structurally fires during volatility events, which on a bull market are downward corrections. Needs to be tested on cyclic asset before declaring shelved permanently.
+4. **Random Delay sometimes IMPROVES PF** (TuesdayTurnaround × 2 cases). Slippage shifts entries slightly later, which on bracket-style strategies sometimes catches a better fill point. Counterintuitive.
+
+## Tools shipped this session (in addition to yesterday's)
+
+- `monte_carlo.py` — already existed; ran 7 times today
+- `correlation_matrix.py` — already existed
+- `mt5_tester_report.py` — used for every run
+- No new tools needed
+
+## Disk discipline
+
+C: drive bounced multiple times today (24 → 11 → 15 → 21 → 11 → 15 → 24 GB). Each cost-stress run grew tick caches by ~3-5 GB. Wiped agent caches twice between runs to keep disk healthy. End of session: 24 GB free.
+
+## What's next
+
+1. Activate paper-trade plan when ready (design doc complete at `paper_trade_plan.md`)
+2. QDM + Dukascopy data import for cross-validation against cleaner ticks
+3. Walk-Forward Matrix (Pipeline Gate 5) — needs proper optimizer
+4. Bridge sticky-dropdown real fix (Spy++ session)
+5. Fade strategies on EURUSD/GBPUSD (cyclic assets) — TurtleSoup/HolyGrail/EightyTwenty/ADXEMARetracement may work where they didn't on bull XAUUSD
+6. Long-only HolyGrail variant — test if disabling shorts removes the inverse-during-pullback problem
+
+## Lessons added
+
+1. **MT5 build 5833 limits.** "Every tick based on real ticks" mode doesn't allow custom spread setting. Use Delays for cost-stress proxy.
+2. **CBN_SELCHANGE alone is NOT the dropdown fix.** Win32 SendMessage with CB_SETCURSEL + WM_COMMAND/CBN_SELCHANGE notification doesn't fully replicate user click. There's another signal required.
+3. **IS phase failure is the most common gate failure.** Strategies that pass full window often fail IS-only because the recent regime carried them. Always check IS phase as primary, not full window.
+4. **Random Delay simulation can be a legitimate cost-stress.** Real-world slippage matters; tests that survive it are more deployment-ready.
+5. **Manual dropdown changes between bridge-driven runs add ~30 sec each.** Acceptable tax for full automation hybrid mode.
