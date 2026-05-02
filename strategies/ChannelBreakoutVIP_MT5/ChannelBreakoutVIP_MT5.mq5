@@ -24,7 +24,21 @@
 
 #property strict
 #property copyright "Pella project — MotherEA S1 port"
-#property version   "0.2"
+#property version   "0.3"
+//
+// v0.3 changes vs v0.2:
+//   + MinChannelWidthPct — volatility-regime filter. Rejects entries
+//     when the Donchian channel (upBound - downBound) is < this percent
+//     of close. Wide channel = real volatility regime where breakouts
+//     have follow-through. Tight channel = ranging/dead market where
+//     every breakout is a fake reversal.
+//   Diagnosis trigger: walk-forward 2026 Q1 USDJPY had Sharpe -2.47.
+//     Forensic analysis showed USDJPY trading range collapsed from 22 jpy
+//     (2023) to 6 jpy (2026 Q1) — every long breakout reverted into the
+//     channel, hitting channel-low SL. Pure volatility-regime mismatch.
+//     This filter would have killed those low-vol entries while preserving
+//     2024's Sharpe-2.83 high-vol environment.
+//   Default MinChannelWidthPct=0.0 (disabled) — bit-identical backward compat.
 //
 // v0.2 changes vs v0.1:
 //   + Percent-risk lot sizing (Zenom Phase 5 / Carver vol-targeting equivalent).
@@ -60,6 +74,9 @@ input group "Position sizing (v0.2 Zenom/Carver alignment)"
 input bool   UseRiskPercent     = false;      // false=fixed Lots; true=% of balance per trade
 input double RiskPercent        = 1.0;        // 1.0% per trade (Zenom recommended for challenge phase)
 input double MaxLotsCap         = 10.0;       // hard cap regardless of risk math
+
+input group "Volatility regime filter (v0.3)"
+input double MinChannelWidthPct = 0.0;        // 0=disabled; 0.3 recommended for USDJPY low-vol regime
 
 CTrade trade;
 
@@ -279,6 +296,13 @@ void OnTick()
          double dp = GetTodaysClosedProfit();
          if (dp >= DailyTakeProfitUSD)              blocked = true;
          else if (DailyTakeProfitUSD - dp < MinTradeValueUSD) blocked = true;
+      }
+
+      // v0.3: volatility-regime gate — skip entries when channel is too tight
+      if (MinChannelWidthPct > 0 && close0 > 0)
+      {
+         double channelWidthPct = (upBound - downBound) / close0 * 100.0;
+         if (channelWidthPct < MinChannelWidthPct) blocked = true;
       }
 
       CancelPendingBuyStop();

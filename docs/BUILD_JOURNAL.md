@@ -837,6 +837,35 @@ First version of `walk_forward.py` labeled TT NDX as "DEGRADING" because <50% of
 
 7 of 8 gates passed for the survivor cohort. Only Gate 8 (live demo) remains — and the walk-forward result tells us which 3 specs to actually deploy in that demo.
 
+## ChBVIP USDJPY 2026 Q1 collapse — investigation + decision
+
+**Forensic finding:** USDJPY trading range collapsed from 22 jpy (2023) to 6 jpy (2026 Q1) — volatility regime change, not directional. The strategy is long-only Donchian breakout; in a tight ranging market, every breakout is a fake breakout that reverts into the channel. 49/49 trades in Q1 2026 were longs, 14% win rate in April alone.
+
+**Tested fix — ChBVIP v0.3 with `MinChannelWidthPct` volatility filter:**
+
+| Window | NOFILTER | VF 0.3% | VF 0.5% |
+|---|---|---|---|
+| 2024 (good year) Sharpe | 2.83 | 2.66 | 2.67 |
+| 2026 Q1 (broken) Sharpe | -2.47 | **-2.47 (zero filtered!)** | **-1.34 (still losing)** |
+
+The filter **failed**: at VF 0.3% it didn't trigger at all (channel-lookback was wide enough by-the-numbers); at VF 0.5% it filtered only 6/49 trades and the remainder still produced Sharpe -1.34. Channel-width measures the lookback range, not current-bar follow-through, so it can't catch this regime.
+
+**Decision: Option B — DECOMMISSION ChBVIP from USDJPY.** No edge to rescue. ChBVIP XAUUSD remains the strongest deploy candidate (4/4 windows STABLE, monotonically improving Sharpe).
+
+ChBVIP v0.3 source still ships (compiles 0 errors) — the `MinChannelWidthPct` input is defaulted to 0 (backward-compat, identical to v0.2). Available as future tooling but not the answer here.
+
+**Updated deployment portfolio (post-investigation):**
+
+| # | Strategy | Symbol | TF | Mode | Sharpe | Walk-forward verdict |
+|---|---|---|---|---|---|---|
+| 1 | ChBVIP_MT5 | XAUUSD | H1 | PCT 1% | 1.74 | STABLE 4/4 |
+| 2 | IDNR4_MT5 v0.3 | XAUUSD | H4 | PCT 1% | 1.10 | STABLE 3/4 |
+| 3 | TuesdayTurnaroundNDX | NDX | H1/H4 | FIXED or PCT | 1.53 / 1.27 | IMPROVING |
+
+3 deployable specs across 2 independent allocations (Gold-bucket = #1+#2 collapsed at half-risk each, NDX-bucket = #3). Down from 5 specs / 3 allocations originally, but every survivor has been beaten on by walk-forward + correlation + cost-stress + Monte Carlo.
+
+This is the "real" deployment portfolio for tomorrow's paper-trade plan.
+
 ## Meta EA v0.1 scaffold shipped
 
 `PellaMetaEA.mq5` — single chart-attached EA scaffold. Compiles 0 errors. Architecture:

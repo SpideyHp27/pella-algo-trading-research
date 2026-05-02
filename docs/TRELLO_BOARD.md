@@ -179,11 +179,14 @@
 
 ### Immediate next session (high priority)
 
-**INVESTIGATE ChBVIP USDJPY 2026 Q1 collapse**
-- Walk-forward revealed Sharpe -2.47 in Q1 2026
-- Was thriving in 2024 (Sharpe 2.83)
-- Diagnose: regime shift? specific bad month? broker change? data issue?
-- Decision: retire from USDJPY, or just delay deployment + keep watching
+**INVESTIGATE ChBVIP USDJPY 2026 Q1 collapse — DONE, decision = decommission**
+- Forensic: USDJPY range collapsed 22 jpy (2023) → 6 jpy (2026 Q1) — vol regime shift
+- 49/49 trades long, 14% WR April 2026, Sharpe -2.47
+- Tested ChBVIP v0.3 with MinChannelWidthPct filter at 0.3% and 0.5% thresholds
+  - At 0.3%: filter didn't trigger AT ALL on broken trades (lookback width was big enough)
+  - At 0.5%: filtered 6/49 but remainder still Sharpe -1.34 (still losing)
+- DECISION: decommission ChBVIP from USDJPY entirely. Edge is dead.
+- ChBVIP XAUUSD remains TOP deployment candidate (4/4 windows STABLE)
 
 **PellaMetaEA v0.2 — port subsystems 1, 2, 4 fully**
 - v0.1 scaffold has TT NDX (subsystem 3) live
