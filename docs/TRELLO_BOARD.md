@@ -161,6 +161,20 @@
 - ChBVIP USDJPY: **RED FLAG** — 2026 Q1 Sharpe -2.47 — strategy lost money this year
 - Saved a deployment mistake
 
+**Pipeline hardening pass — mt5_cli + mt5_compile + parser fixes**
+- ENUM_TIMEFRAMES auto-conversion (PERIOD_H4 → 16388)
+- Pre-flight .ex5 existence + symbol-alias warnings (NDAQ/NDX_Tick/NQ/GC/etc)
+- Post-flight log scan for license/init/load failures
+- mt5_compile.py wrapper handles filename-with-spaces bug
+- mt5_tester_report.py regex now handles EA names with spaces
+
+**BreakoutLoopHCLC v1.0 — Discord-replicated, NEW Tier-1 deployable**
+- fxDreema marketplace EA, replicated using actual Discord parameters (NDX D1 chart, Timeframe input H4, pop_sl=1, TP=60, lookback=55, EMA=50, spread=15, max_pos=2, $100k deposit, 2019-2026)
+- Result: 803 trades, PF 1.40, Sharpe 1.44, MaxDD 2.01%, MC p95 2.6%, p-HAC < 0.001
+- Final balance $231k from $100k start (+131%)
+- 6/6 universal prop gates PASS with massive margin
+- Bumps deployable Pella portfolio to 6 specs across 5 strategies
+
 **PellaMarubozu_MT5 v0.1 — clean-room build + 3-TF sweep + canonical lock**
 - Marketplace .ex5 had license-lock; built clean-room version from .set spec
 - Tested H4 / H1 / M5 with NY 17-19 session filter

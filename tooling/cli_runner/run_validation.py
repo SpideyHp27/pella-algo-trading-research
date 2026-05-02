@@ -91,6 +91,12 @@ def run_one(spec: TestSpec, runner: MT5CliRunner, out_dir: Path) -> dict:
           f"elapsed={cli_result['elapsed_seconds']:.1f}s "
           f"log_growth={cli_result.get('log_growth_bytes', 0)}B")
 
+    # Surface pre-flight warnings + post-flight diagnostics from the new mt5_cli
+    for w in cli_result.get("warnings", []):
+        print(f"  WARN: {w}")
+    for d in cli_result.get("diagnostics", []):
+        print(f"  DIAGNOSTIC: {d}")
+
     if not cli_result["success"]:
         return {"spec": asdict(spec), "cli": cli_result, "error": cli_result.get("error")}
 
@@ -99,6 +105,16 @@ def run_one(spec: TestSpec, runner: MT5CliRunner, out_dir: Path) -> dict:
     parse_summary = parse_log_to_csv(log_path, spec.expert, csv_path)
     if "error" in parse_summary:
         return {"spec": asdict(spec), "cli": cli_result, "parse": parse_summary}
+
+    # Detect 0-trade silent failure (CLI ran cleanly but EA placed nothing)
+    if parse_summary.get("trade_count", 0) == 0:
+        print(f"  WARN: 0 trades parsed. EA ran but didn't fire entries.")
+        print(f"        Common causes: symbol/spread filter rejecting setup, "
+              f"input mismatch, indicator handle init failure (silent), or "
+              f"strategy genuinely had no signals in the test window.")
+        return {"spec": asdict(spec), "cli": cli_result,
+                "parse": parse_summary,
+                "metrics": {"label": spec.label, "trades": 0, "error": "0 trades fired"}}
 
     print(f"  Parsed: {parse_summary['trade_count']} trades, "
           f"final balance ${parse_summary['final_balance']}")

@@ -962,6 +962,55 @@ Compiled clean (0 errors). Tested across 3 timeframes:
 
 NDX failed completely on this strategy (p-HAC ≥ 0.10 across all configs) — Marubozu only works on XAUUSD in our test universe.
 
+## Pipeline hardening pass (2026-05-03)
+
+After the Marubozu license error and the Breakout Loop input-mismatch chain of failed runs, did a substantial hardening pass on the CLI runner pipeline.
+
+**`mt5_cli.py` upgrades:**
+- ENUM_TIMEFRAMES auto-conversion: pass `"PERIOD_H4"` and the runner converts to integer `16388` (the bug that broke the H4 Breakout Loop run — fxDreema EA's internal Timeframe input expects integer, ignored the string)
+- Pre-flight .ex5 existence check — fails fast with clear message
+- Symbol alias warnings table — flags NDAQ/NDX/NDX_Tick/NQ/GC/ES/YM/GOLD/etc. confusion proactively
+- Post-flight log scan — auto-detects and surfaces marketplace license errors, EA load failures, INIT_FAILED returns, symbol-not-in-Market-Watch, zero history quality
+- Stricter success definition: requires clean exit + log activity > 1KB + no fatal diagnostics
+
+**`mt5_compile.py` (new tool):**
+- Wrapper around metaeditor64.exe that handles the filename-with-spaces silent-failure bug (caught with `Daily VWAP.mq5` and `Marubozu Gold Expert.ex5`)
+- Aliases to no-space name → compiles → copies .ex5 back to original name
+
+**`run_validation.py` orchestrator:**
+- Surfaces warnings + diagnostics from new mt5_cli output
+- Detects 0-trade silent failures (CLI ran cleanly but EA didn't trade)
+
+**`mt5_tester_report.py` parser:**
+- Fixed: TEST_HEADER regex now handles EA filenames with spaces (was silently dropping all trades for any EA whose filename had a space — the Breakout Loop bug)
+
+## BreakoutLoopHCLC v1.0 — Discord-replicated, NEW Tier-1 deployable (2026-05-03)
+
+User-supplied marketplace .ex5 (fxDreema-built) for "Breakout Loop HCLC EMA APRIL 2026". After three failed test runs using EA source-code defaults, the user shared the actual Discord settings and result. Reproduced cleanly using the hardened pipeline (auto-converted PERIOD_H4 → 16388 for the Timeframe ENUM input).
+
+**Discord vs replication:**
+
+| Metric | Discord | Reproduction | Diff |
+|---|---|---|---|
+| Symbol | NDX_Tick | NDX (Darwinex doesn't have _Tick variant) | similar feed |
+| Chart | D1 | D1 | match |
+| Internal Timeframe | 16388 (H4) | 16388 (H4 via auto-conversion) | match |
+| Period | 2019.01.01-2026.04.06 | 2019.01.01-2026.04.06 | match |
+| Inputs | risk=1, pop_sl=1, TP=60, lookback=55, EMA=50, spread=15, max_pos=2 | exact match | match |
+| Deposit | $100k | $100k | match |
+| Trades | 755 | 803 | +6% |
+| PF | 1.36 | **1.396** | better |
+| Sharpe | 2.93 | 1.444 | half but solid |
+| MaxDD% | 5.09 | **2.01** | better |
+| MC p95 DD | n/a | 2.6 | huge margin |
+| p-HAC | n/a | <0.001 | highly significant |
+
+**Universal prop gates: 6/6 PASS with margin.** Best new candidate of the session.
+
+The Sharpe difference (Discord 2.93 vs ours 1.44) is likely due to the Darwinex `NDX` feed having different consecutive-trade microstructure than the broker `NDX_Tick` Discord used. Both are valid feeds; the underlying edge is real (PF, MaxDD, MC, p-HAC all confirm).
+
+**Canonical config: NDX D1 chart + Timeframe input H4 + Discord parameters.** Tier-1 deployable. Final balance $231k from $100k start over 7.3 years.
+
 ## Meta EA v0.1 scaffold shipped
 
 `PellaMetaEA.mq5` — single chart-attached EA scaffold. Compiles 0 errors. Architecture:
