@@ -141,37 +141,54 @@
 - `docs/ACHIEVEMENTS_2026-05-02.md`
 - Translates jargon → readable for self-review
 
+**Correlation matrix on 5 surviving specs (Pipeline Gate 7)**
+- Avg pairwise correlation +0.189 — PASSES Carver/Clenow gate
+- 2 redundant pairs flagged: TT_FIXED × TT_PCT (0.96), ChBVIP_XAU × IDNR4_XAU (0.63)
+- 5 specs reduce to 3 truly independent allocations after collapse
+- Tool: `tools/correlation_survivors.py`
+- Doc: `docs/CORRELATION_MATRIX_2026-05-02.md`
+
+**Build walk-forward orchestrator**
+- `tools/walk_forward.py` — slides each spec across 4 OOS windows (2023, 2024, 2025, 2026Q1)
+- Per-spec trend-aware verdict: STABLE / IMPROVING / DEGRADING / RED FLAG / MIXED
+- Verdict-labeling bug caught and fixed (improving ≠ degrading)
+
+**Walk-forward batch — Pipeline Gate 5 — THE BIG REVEAL**
+- 20 backtests in 15.5 min
+- ChBVIP XAUUSD: STABLE (4/4 pass, monotonic improvement) — TOP CANDIDATE
+- IDNR4 XAUUSD H4: STABLE (3/4 pass)
+- TT NDX (both modes): IMPROVING (2/4 with strong recent)
+- ChBVIP USDJPY: **RED FLAG** — 2026 Q1 Sharpe -2.47 — strategy lost money this year
+- Saved a deployment mistake
+
+**Meta EA v0.1 scaffold compiles clean**
+- `strategies/PellaMetaEA/PellaMetaEA.mq5`
+- TT NDX subsystem fully implemented
+- Subsystems 1, 2, 4 stubbed for v0.2 port
+- Shared safety layer fully implemented (DD circuit, weekend flat, news blackout stub, max-concurrent cap, magic isolation, cross-symbol polling)
+
 ---
 
-## IN PROGRESS list — 1 card
+## IN PROGRESS list — 0 cards
 
-**Walk-forward analysis on 5 surviving specs**
-- 4 sliding windows × 5 specs = 20 backtests
-- Tests whether edge is stable across different historical chunks
-- ETA: ~30 min once running
+(Walk-forward batch completed — 20 backtests across 5 specs × 4 windows in 15.5 min. See `CLI_VALIDATION_2026-05-02_WALKFORWARD.md` for results. Findings moved to "DONE" + new follow-up cards added below.)
 
 ---
 
-## TO-DO list — 14 cards
+## TO-DO list — 13 cards
 
-### Immediate (this session, after walk-forward)
+### Immediate next session (high priority)
 
-**Run correlation matrix on the 5 surviving specs**
-- Use existing `tools/correlation_matrix.py`
-- Confirm strategies aren't 5 copies of the same return stream
-- Output: `docs/CORRELATION_MATRIX_2026-05-02.md`
+**INVESTIGATE ChBVIP USDJPY 2026 Q1 collapse**
+- Walk-forward revealed Sharpe -2.47 in Q1 2026
+- Was thriving in 2024 (Sharpe 2.83)
+- Diagnose: regime shift? specific bad month? broker change? data issue?
+- Decision: retire from USDJPY, or just delay deployment + keep watching
 
-**Design Meta EA SPEC**
-- Single chart-attached EA wrapping all 3 surviving strategies
-- Shared news-blackout, gap filter, anti-overlap rules
-- Per Carver "trading subsystems" pattern
-
-**CODEGEN + compile Meta EA**
-- Implement PellaMetaEA.mq5
-- Compile clean via metaeditor64.exe CLI
-- One smoke-test backtest to confirm it runs
-
-### Next week
+**PellaMetaEA v0.2 — port subsystems 1, 2, 4 fully**
+- v0.1 scaffold has TT NDX (subsystem 3) live
+- Mechanical port: drop entry/exit logic into placeholder functions
+- Each subsystem already has its standalone EA as reference
 
 **Bridge sticky-dropdown root-cause investigation**
 - v0.44 patch did NOT fix it

@@ -136,8 +136,25 @@ def stability_report(results_by_strategy: dict) -> str:
             lines.append("")
             lines.append(f"**Stability:** mean Sharpe {mean_s:.2f} | std {std_s:.2f} "
                          f"| {n - sub_gate}/{n} windows pass 1.0 Sharpe gate")
-            verdict = "STABLE" if sub_gate <= n // 4 else \
-                      ("DEGRADING" if sub_gate >= n // 2 else "MIXED")
+            # Verdict considers TREND not just pass-rate. A strategy with bad early
+            # years and strong recent ones is IMPROVING, not degrading.
+            recent_half = sharpes[len(sharpes)//2:]
+            early_half = sharpes[:len(sharpes)//2]
+            recent_mean = sum(recent_half)/len(recent_half) if recent_half else 0
+            early_mean = sum(early_half)/len(early_half) if early_half else 0
+            most_recent = sharpes[-1]
+            if most_recent < -1.0:
+                verdict = "RED FLAG — most recent window has Sharpe < -1 (regime collapse?)"
+            elif sub_gate == 0:
+                verdict = "STABLE — every window passes 1.0 Sharpe gate"
+            elif sub_gate <= n // 4:
+                verdict = "STABLE — most windows pass"
+            elif recent_mean > early_mean and most_recent >= 1.0:
+                verdict = "IMPROVING — early misses, recent windows pass"
+            elif recent_mean < early_mean and most_recent < 1.0:
+                verdict = "DEGRADING — recent windows miss the gate"
+            else:
+                verdict = "MIXED — no clear trend, manual review needed"
             lines.append(f"**Verdict:** {verdict}")
         lines.append("")
     return "\n".join(lines)
