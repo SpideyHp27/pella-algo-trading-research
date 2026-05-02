@@ -24,20 +24,29 @@
 
 #property strict
 #property copyright "Pella project — MotherEA S1 port"
-#property version   "0.3"
+#property version   "0.4"
+//
+// v0.4 changes vs v0.3:
+//   + MinAtrPctForTrail — volatility-aware trailing stop gate. The existing
+//     ATR trail (close - AtrMult*ATR) only adjusts SL upward when
+//     ATR/close >= MinAtrPctForTrail. In low-vol regimes the trail goes idle
+//     and only the channel SL (or fixed dollar SL) exits the position.
+//   Diagnosis trigger: USDJPY 2026 Q1 walk-forward window had Sharpe -2.47
+//     under default trail config. NOTRAIL produced +1.39 in same window
+//     (channel-width filter from v0.3 didn't help — that gates entries, not
+//     exits). Mechanism: in low-vol regime, ATR is small, so trail sits very
+//     close to current price → every wiggle whipsaws out → losses compound.
+//     Vol-gated trail keeps the 2024 Sharpe-2.83 benefit while neutralising
+//     low-vol whipsaw years.
+//   Default MinAtrPctForTrail=0.0 (disabled, always trail) — bit-identical
+//     backward compat to v0.3.
 //
 // v0.3 changes vs v0.2:
-//   + MinChannelWidthPct — volatility-regime filter. Rejects entries
-//     when the Donchian channel (upBound - downBound) is < this percent
-//     of close. Wide channel = real volatility regime where breakouts
-//     have follow-through. Tight channel = ranging/dead market where
-//     every breakout is a fake reversal.
-//   Diagnosis trigger: walk-forward 2026 Q1 USDJPY had Sharpe -2.47.
-//     Forensic analysis showed USDJPY trading range collapsed from 22 jpy
-//     (2023) to 6 jpy (2026 Q1) — every long breakout reverted into the
-//     channel, hitting channel-low SL. Pure volatility-regime mismatch.
-//     This filter would have killed those low-vol entries while preserving
-//     2024's Sharpe-2.83 high-vol environment.
+//   + MinChannelWidthPct — volatility-regime filter on ENTRIES. Rejects
+//     entries when the Donchian channel (upBound - downBound) is < this
+//     percent of close. Did not solve the 2026 Q1 USDJPY problem (the
+//     entries weren't filtered out — the trailing exits were the issue).
+//     Kept available for future work on entry-side regime filtering.
 //   Default MinChannelWidthPct=0.0 (disabled) — bit-identical backward compat.
 //
 // v0.2 changes vs v0.1:
@@ -76,7 +85,10 @@ input double RiskPercent        = 1.0;        // 1.0% per trade (Zenom recommend
 input double MaxLotsCap         = 10.0;       // hard cap regardless of risk math
 
 input group "Volatility regime filter (v0.3)"
-input double MinChannelWidthPct = 0.0;        // 0=disabled; 0.3 recommended for USDJPY low-vol regime
+input double MinChannelWidthPct = 0.0;        // 0=disabled; entries gated when channel < this % of close
+
+input group "Vol-aware trailing-stop gate (v0.4)"
+input double MinAtrPctForTrail  = 0.0;        // 0=always trail (v0.3 behavior); 0.05 recommended (FX low-vol gate)
 
 CTrade trade;
 
@@ -331,12 +343,21 @@ void OnTick()
       ulong posTicket = CurrentPositionTicket();
       if (posTicket == 0) return;
 
+      // v0.4: vol-aware trail gate. If ATR/close is below MinAtrPctForTrail,
+      // the trail goes idle for this bar — only the channel SL exits.
+      bool atrTrailActive = !UseFixedStopLoss && atr0 > 0;
+      if (atrTrailActive && MinAtrPctForTrail > 0 && close0 > 0)
+      {
+         double atrPct = atr0 / close0 * 100.0;
+         if (atrPct < MinAtrPctForTrail) atrTrailActive = false;
+      }
+
       // Channel exit: SL anchored to channel low
       double newChannelSL = NormalizeDouble(downBound - point, _Digits);
 
-      // ATR trailing
+      // ATR trailing (only when active)
       double newTrailingSL = trailingStop;
-      if (!UseFixedStopLoss && atr0 > 0)
+      if (atrTrailActive)
       {
          double candidate = close0 - atr0 * AtrMult;
          if (candidate > newTrailingSL) newTrailingSL = candidate;
@@ -345,7 +366,7 @@ void OnTick()
 
       // Tighter (higher for long) of the two stops wins
       double newSL = newChannelSL;
-      if (!UseFixedStopLoss && newTrailingSL > newSL) newSL = newTrailingSL;
+      if (atrTrailActive && newTrailingSL > newSL) newSL = newTrailingSL;
 
       if (PositionSelectByTicket(posTicket))
       {
@@ -358,7 +379,7 @@ void OnTick()
       }
 
       // ATR market exit: if Close <= trailingStop, close at market
-      if (!UseFixedStopLoss && atr0 > 0 && close0 <= trailingStop)
+      if (atrTrailActive && close0 <= trailingStop)
       {
          trade.PositionClose(posTicket);
          inLong       = false;

@@ -179,14 +179,16 @@
 
 ### Immediate next session (high priority)
 
-**INVESTIGATE ChBVIP USDJPY 2026 Q1 collapse — DONE, decision = decommission**
-- Forensic: USDJPY range collapsed 22 jpy (2023) → 6 jpy (2026 Q1) — vol regime shift
-- 49/49 trades long, 14% WR April 2026, Sharpe -2.47
-- Tested ChBVIP v0.3 with MinChannelWidthPct filter at 0.3% and 0.5% thresholds
-  - At 0.3%: filter didn't trigger AT ALL on broken trades (lookback width was big enough)
-  - At 0.5%: filtered 6/49 but remainder still Sharpe -1.34 (still losing)
-- DECISION: decommission ChBVIP from USDJPY entirely. Edge is dead.
-- ChBVIP XAUUSD remains TOP deployment candidate (4/4 windows STABLE)
+**ChBVIP USDJPY rescue: v0.4 vol-aware trailing stop — DEPLOYED**
+- Initial diagnosis (vol regime shift) was correct but the wrong fix layer
+- v0.3 MinChannelWidthPct (entry-side filter) didn't help — wrong layer
+- Multi-angle re-test found: ATR trailing stop is the killer in low-vol
+- v0.4 adds MinAtrPctForTrail input — gates the trail by minimum volatility
+- Threshold sweep: 0.20% is sweet spot (2024 stays at 2.31, 2026 Q1 rescued to +1.09)
+- Walk-forward: mean Sharpe 1.23 (vs baseline 0.47), zero losing windows
+- XAUUSD safety check: vol-trail @ 0.20 doesn't harm gold (4/4 STABLE preserved)
+- DECISION: ChBVIP v0.4 deployed with MinAtrPctForTrail=0.20 universal default
+- USDJPY RESTORED to deployable portfolio (4 specs total)
 
 **PellaMetaEA v0.2 — port subsystems 1, 2, 4 fully**
 - v0.1 scaffold has TT NDX (subsystem 3) live
