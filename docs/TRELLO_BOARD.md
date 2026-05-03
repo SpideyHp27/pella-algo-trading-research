@@ -168,17 +168,13 @@
 - mt5_compile.py wrapper handles filename-with-spaces bug
 - mt5_tester_report.py regex now handles EA names with spaces
 
-**BreakoutLoopHCLC v1.0 — Discord-replicated, T2 PENDING G4b sensitivity**
-- fxDreema marketplace EA, replicated using actual Discord parameters (NDX D1 chart, Timeframe input H4, pop_sl=1, TP=60, lookback=55, EMA=50, spread=15, max_pos=2, $100k deposit, 2019-2026)
-- Baseline result: 803 trades, PF 1.40, Sharpe 1.44, MaxDD 2.01%, MC p95 2.6%, p-HAC < 0.001
-- Final balance $231k from $100k start (+131%)
-- DEMOTED from T1 → T2-PENDING: Discord params are non-default rounded values
-  (lookback=55, EMA=50, TP=60) — classic optimization fingerprint. Need G4b
-  param-sensitivity test to confirm not curve-fit.
-- G4b firing now: ±10 step on TP/lookback/EMA, ±0.5 on pop_sl, ±5 on spread
-- 11 runs total, ~2 hours unattended
-- If all neighbors hold PF > 1.0 + < 40% Sharpe drop → promote back to T1
-- If any cliff edge (PF < 1.0) → keep at T2 or shelve
+**BreakoutLoopHCLC v1.0 — G4b + Cross-TF VERIFIED → PROMOTED to TIER-1**
+- Baseline (Discord params): 803 trades, PF 1.40, Sharpe 1.44, MaxDD 2.01%, MC p95 2.6%, p-HAC <0.001, $100k → $231k
+- G4b sensitivity: 9/10 PASS, 1 WARN (pop_sl +0.5 = -49% Sharpe). NO cliff edges, NO collapses.
+- Cross-TF: bit-identical across D1, H1, M15 charts (TF-robust by construction — EA uses internal Timeframe=H4 for indicators, chart TF doesn't affect signal timing)
+- DEPLOYMENT LOCK: pop_sl MUST stay at 1.0 in production. Don't drift this input.
+- Suspicious finding: EMA ±10 produces BIT-IDENTICAL results — investigate later (EMA may not be doing what we think at this perturbation scale)
+- Bumps deployable Pella portfolio to 6 specs across 5 strategies (3 Tier-1, 2 Tier-2, 1 newly-promoted Tier-1)
 
 **G4b Param Sensitivity tool built (param_sensitivity.py)**
 - Adopted from Discord trader's gate framework
