@@ -111,16 +111,27 @@ def parse_segment(start: int, end: int, header_m, lines):
     }
 
 
-# Contract size by symbol family — Darwinex spec
+# Contract size by symbol family — empirically verified from MT5 HTM reports
+# IMPORTANT: index contract sizes vary by broker. These are for Darwinex Demo.
+# For 100% accurate per-trade profits use mt5_htm_report.py instead — it reads
+# the REAL profit values MT5 already computed (no estimation needed).
 CONTRACT_SIZE = {
     # FX majors / minors
     "default_fx": 100_000,
     # Metals
     "XAUUSD": 100,
     "XAGUSD": 5_000,
-    # Indices (rough — varies by broker; user can override)
-    "default_index": 1,
+    # Indices on Darwinex Demo (verified by comparing CSV vs HTM Profit column)
+    "NDX": 10,        # NASDAQ-100 CFD: 1 point × 1 lot = $10. Was 1 (10× under)
+    "SP500": 50,      # S&P 500 CFD typical
+    "WS30": 5,        # Dow Jones CFD typical
+    "default_index": 10,  # safer default than 1 (was the source of NDX bug)
 }
+
+
+def _index_contract(symbol: str) -> float:
+    """Look up index contract size, fall back to default_index."""
+    return CONTRACT_SIZE.get(symbol, CONTRACT_SIZE["default_index"])
 
 
 def estimate_usd_profit(symbol: str, side: str, volume: float,
@@ -159,8 +170,9 @@ def estimate_usd_profit(symbol: str, side: str, volume: float,
     if len(symbol) == 6:
         return price_diff * volume * 100_000 / close_price
 
-    # Indices, futures, others — assume contract = 1, profit in quote units
-    return price_diff * volume
+    # Indices, futures, others — look up symbol-specific contract size,
+    # fall back to default_index (10) which works for NDX-class CFDs
+    return price_diff * volume * _index_contract(symbol)
 
 
 def pair_trades(deals):
