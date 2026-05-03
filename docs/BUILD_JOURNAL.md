@@ -1011,6 +1011,51 @@ The Sharpe difference (Discord 2.93 vs ours 1.44) is likely due to the Darwinex 
 
 **Canonical config: NDX D1 chart + Timeframe input H4 + Discord parameters.** Tier-1 deployable. Final balance $231k from $100k start over 7.3 years.
 
+## Discord gate framework adopted + G4b Param Sensitivity tool built (2026-05-03)
+
+User flagged that BreakoutLoopHCLC's Discord parameters (lookback=55, EMA=50, TP=60) are non-default rounded values — classic optimization fingerprint suggesting curve-fit. Shared a screenshot of a Discord trader's 8-gate stress-test framework as the new standard.
+
+**The 8 gates with our implementation status:**
+
+| Gate | What it does | Our tool | Status |
+|---|---|---|---|
+| G2 — Discovery | param grid sweep, false discovery check | manual | partial |
+| G3 — Cost Stress | 2× spread test (auto-pass H4/H1) | random delay proxy | partial |
+| G4a — Yearly Stability | year-by-year P&L | `walk_forward.py` | DONE |
+| **G4b — Param Sensitivity** | ±1 step neighbors; cliff/warn/pass | `param_sensitivity.py` (NEW) | DONE |
+| G4c — WF Matrix | re-optimize IS, lock, test OOS | `walk_forward.py` (OOS only) | partial |
+| G4d — Holdout | annual rollover (Jan each year) | nothing | MISSING |
+| G4e — Model 0 | every-tick verification | modelling=8 | DONE |
+| G5 — Monte Carlo | 95th DD ≤ 2× baseline + extras | `monte_carlo.py` (basic) | partial |
+
+**`tools/param_sensitivity.py` shipped:** takes a baseline TestSpec + list of params with ±1 step sizes, generates 2N variant specs, runs each, surfaces verdict per param:
+- **PASS** — variant PF stays > 1.0 AND Sharpe degradation < 40%
+- **WARN** — variant PF stays > 1.0 BUT Sharpe degradation ≥ 40% (steep gradient)
+- **CLIFF** — variant PF drops below 1.0 (cliff edge — strong curve-fit signal)
+- **COLLAPSE** — variant PF stays positive but Sharpe goes negative (regime sensitive)
+
+Overall verdict combines per-param verdicts: PASS / WARN / FAIL.
+
+**BreakoutLoopHCLC demoted T1 → T2-pending.** G4b firing on it now: ±10 step on TP/lookback/EMA, ±0.5 on pop_sl, ±5 on spread = 11 runs total over ~2hr. If it passes G4b, promotes back to T1; if cliff edge → shelve or keep T2.
+
+## Cross-TF test queued for BLHCLC
+
+After G4b finishes, will fire 2-spec cross-TF batch on BreakoutLoopHCLC: M15 chart + H4 internal, H1 chart + H4 internal. Tests if signal timing is robust to chart-bar timeframe (separate dimension from param sensitivity). ~30 min after G4b.
+
+## Aristhrottle dashboard — can't drive it from Claude Code
+
+User shared `https://aristhrottle.netlify.app/` (a friend built it — has prop simulator, journal, MC, trade analysis, correlation matrix, portfolio overview). Tried WebFetch — landing page returns "Aristhrottle PRO" only, everything behind auth. The OAuth callback URL the user shared (?code=...&state=...) is single-use and was already consumed by their browser.
+
+Cannot programmatically drive a JS SPA from Claude Code without either:
+- Exposed REST API (user is asking friend for endpoints + auth method)
+- Browser automation with persisted auth session (not available)
+
+Workaround options:
+- User drag-drops our trade CSVs (already in date/symbol/side/profit/volume/open_price/close_price format) into the dashboard manually
+- Friend shares API base URL + auth method → we write `aristhrottle_sync.py` similar to `trello_sync.py`
+
+In the meantime, our local `quant_report.py` + `monte_carlo.py` + `correlation_survivors.py` produce equivalent numbers without the pretty UI.
+
 ## Meta EA v0.1 scaffold shipped
 
 `PellaMetaEA.mq5` — single chart-attached EA scaffold. Compiles 0 errors. Architecture:

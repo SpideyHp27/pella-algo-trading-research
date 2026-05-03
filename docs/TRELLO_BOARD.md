@@ -168,12 +168,23 @@
 - mt5_compile.py wrapper handles filename-with-spaces bug
 - mt5_tester_report.py regex now handles EA names with spaces
 
-**BreakoutLoopHCLC v1.0 — Discord-replicated, NEW Tier-1 deployable**
+**BreakoutLoopHCLC v1.0 — Discord-replicated, T2 PENDING G4b sensitivity**
 - fxDreema marketplace EA, replicated using actual Discord parameters (NDX D1 chart, Timeframe input H4, pop_sl=1, TP=60, lookback=55, EMA=50, spread=15, max_pos=2, $100k deposit, 2019-2026)
-- Result: 803 trades, PF 1.40, Sharpe 1.44, MaxDD 2.01%, MC p95 2.6%, p-HAC < 0.001
+- Baseline result: 803 trades, PF 1.40, Sharpe 1.44, MaxDD 2.01%, MC p95 2.6%, p-HAC < 0.001
 - Final balance $231k from $100k start (+131%)
-- 6/6 universal prop gates PASS with massive margin
-- Bumps deployable Pella portfolio to 6 specs across 5 strategies
+- DEMOTED from T1 → T2-PENDING: Discord params are non-default rounded values
+  (lookback=55, EMA=50, TP=60) — classic optimization fingerprint. Need G4b
+  param-sensitivity test to confirm not curve-fit.
+- G4b firing now: ±10 step on TP/lookback/EMA, ±0.5 on pop_sl, ±5 on spread
+- 11 runs total, ~2 hours unattended
+- If all neighbors hold PF > 1.0 + < 40% Sharpe drop → promote back to T1
+- If any cliff edge (PF < 1.0) → keep at T2 or shelve
+
+**G4b Param Sensitivity tool built (param_sensitivity.py)**
+- Adopted from Discord trader's gate framework
+- Tests ±1 step neighbors of each parameter, holding others at baseline
+- Verdicts: PASS / WARN (>40% Sharpe drop) / CLIFF (PF<1.0) / COLLAPSE (Sharpe<0)
+- Required for any new candidate before T1 promotion
 
 **PellaMarubozu_MT5 v0.1 — clean-room build + 3-TF sweep + canonical lock**
 - Marketplace .ex5 had license-lock; built clean-room version from .set spec
@@ -191,15 +202,54 @@
 
 ---
 
-## IN PROGRESS list — 0 cards
+## IN PROGRESS list — 2 cards
 
-(Walk-forward batch completed — 20 backtests across 5 specs × 4 windows in 15.5 min. See `CLI_VALIDATION_2026-05-02_WALKFORWARD.md` for results. Findings moved to "DONE" + new follow-up cards added below.)
+**G4b Param Sensitivity test on BreakoutLoopHCLC v1.0**
+- 11 backtests running (1 baseline + 5 params × ±1 step each)
+- Params: TP ±10, lookback ±10, EMA ±10, pop_sl ±0.5, spread ±5
+- Each backtest ~13 min (D1 + H4 internal + 7yr real ticks)
+- Total ETA: ~2hr 25min from start
+- Goal: confirm BLHCLC isn't curve-fit to its specific Discord parameters
+- If any neighbor cliffs (PF<1.0) → BLHCLC stays T2 or shelved
+
+**Cross-TF test BLHCLC on M15 + H1 charts (queued after G4b)**
+- 2 specs: M15 chart + H4 internal, H1 chart + H4 internal
+- Both use Discord-replicated params
+- Tests if signal timing is robust to chart-bar timeframe (different from internal indicator TF)
+- ETA: ~30 min after G4b completes
 
 ---
 
-## TO-DO list — 13 cards
+## TO-DO list — 17 cards
 
 ### Immediate next session (high priority)
+
+**G4d Holdout tool — build it**
+- Last missing tool from Discord gate framework
+- Annual rollover protocol: hold out the latest year as unseen, IS goes back further
+- Each Jan, oldest holdout year joins IS, newest year becomes the next holdout
+- Should be similar shape to walk_forward.py but with explicit IS/OOS rollover
+
+**Re-run cross-strategy correlation matrix with all 6 specs**
+- correlation_survivors.py needs BLHCLC trade CSV added
+- Confirm BLHCLC is genuinely uncorrelated with the existing 5 (especially TT NDX since both trade NDX)
+- Will fire after G4b verdict + cross-TF results land
+
+**Aristhrottle dashboard integration (waiting on friend's API)**
+- User asking friend (the dashboard's developer) for API base URL + auth method + 2 example endpoints (POST import, GET metrics)
+- If approved, write aristhrottle_sync.py mirroring trello_sync.py pattern
+- If not, manual drag-drop of our trade CSVs is the fallback
+- Aristhrottle features: prop sim, journal, MC analysis, trade analysis, correlation matrix, portfolio overview
+
+**G3 cost stress upgrade — proper 2× spread variant**
+- Currently using random delay as proxy
+- Discord framework wants explicit 2× spread test
+- MT5 5833 doesn't expose Spread setting in real-tick mode → may need synthetic spread injection
+
+**G5 Monte Carlo upgrades**
+- Add 2× spread PF check (require > 1.05)
+- Add session ±1hr PF check (require > 0.90)
+- Existing tool only does shuffle/bootstrap percentile DD
 
 **ChBVIP USDJPY rescue: v0.4 vol-aware trailing stop — DEPLOYED**
 - Initial diagnosis (vol regime shift) was correct but the wrong fix layer
