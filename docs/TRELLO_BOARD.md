@@ -196,35 +196,121 @@
 - Subsystems 1, 2, 4 stubbed for v0.2 port
 - Shared safety layer fully implemented (DD circuit, weekend flat, news blackout stub, max-concurrent cap, magic isolation, cross-symbol polling)
 
----
+**Look-ahead bias audit on 5 surviving EAs**
+- ChBVIP_MT5 v0.4: NO HARD BIAS (Donchian + ATR use bar 0 at new-bar gate = known-now data, not future). Minor methodological cleanup queued for v0.5.
+- IDNR4_MT5 v0.3: CLEAN. All bar accesses shift=1 or 2 (closed bars).
+- TuesdayTurnaroundNDX: CLEAN. Calendar-time driven, Friday-red filter reads fully-closed Friday bar.
+- PellaMarubozu_MT5 v0.1: CLEAN. DetectMarubozu uses bar 1, ATR shift=1, EMA on bar 0 same known-now pattern as ChBVIP.
+- BreakoutLoopHCLC v1.0: UNAUDITED (fxDreema-generated 489KB source in awkward encoding). Circumstantial confidence from cross-TF + p-HAC < 0.001.
 
-## IN PROGRESS list — 2 cards
-
-**G4b Param Sensitivity test on BreakoutLoopHCLC v1.0**
-- 11 backtests running (1 baseline + 5 params × ±1 step each)
-- Params: TP ±10, lookback ±10, EMA ±10, pop_sl ±0.5, spread ±5
-- Each backtest ~13 min (D1 + H4 internal + 7yr real ticks)
-- Total ETA: ~2hr 25min from start
-- Goal: confirm BLHCLC isn't curve-fit to its specific Discord parameters
-- If any neighbor cliffs (PF<1.0) → BLHCLC stays T2 or shelved
-
-**Cross-TF test BLHCLC on M15 + H1 charts (queued after G4b)**
-- 2 specs: M15 chart + H4 internal, H1 chart + H4 internal
-- Both use Discord-replicated params
-- Tests if signal timing is robust to chart-bar timeframe (different from internal indicator TF)
-- ETA: ~30 min after G4b completes
+**G4b Param Sensitivity test on BreakoutLoopHCLC v1.0 — VERDICT: PROMOTED to T1**
+- 11 backtests in 129 min
+- 9/10 PASS, 1 WARN (pop_sl +0.5 = -49% Sharpe)
+- No cliff edges, no collapses
+- Cross-TF (M15/H1/D1) bit-identical = TF-robust by construction
+- Promoted to T1 with deployment lock: pop_sl=1.0 must not drift
 
 ---
 
-## TO-DO list — 17 cards
+## IN PROGRESS list — 1 card
+
+**G4d Holdout test on all 6 surviving specs (running)**
+- 12 backtests (6 strategies × IS + OOS)
+- IS: spec start_date to 2025-04-06; OOS: 2025-04-06 to 2026-04-06 (~1yr unseen)
+- Verdicts: PASS / WARN / FAIL / COLLAPSE
+- Strategies failing G4d get demoted regardless of prior gate results
+- THE most direct curve-fit detector (per López de Prado)
+- ETA: ~30-40 min total
+
+---
+
+## TO-DO list — 25 cards
+
+### STRATEGIC ROADMAP — Renaissance-style buildout
+
+**[Tier-2 — high-value foundational] Build portfolio_optimizer.py**
+- Currently we equal-weight surviving strategies — suboptimal
+- Need: given N validated trade CSVs, output OPTIMAL capital allocation
+- Methods: risk parity / inverse-volatility / Markowitz / handcrafted (Carver)
+- Bridge from "validated strategies" to "deployable portfolio"
+- Estimated effort: 1 day to build cleanly
+- Reference: Carver "Smart Portfolios" Ch 3-4 (handcrafted method), AFML Ch 16 (HRP)
+
+**[Tier-2] G4c proper Walk-Forward Matrix upgrade**
+- Current walk_forward.py is OOS-only (yearly slicing, no IS re-optimization)
+- Proper version: re-optimize parameters on each IS fold, lock them, test on next OOS fold
+- Detects parameter drift across regimes
+- Reference: Pardo "Evaluation and Optimization of Trading Strategies"
+
+**[Tier-3 — Renaissance vision] Automated discovery agent**
+- Give it: directory of EA files + symbol watchlist
+- It runs: intake → all 8 gates → final tier classification
+- Surfaces queue of survivors for human approval
+- Goal: process 20-30 strategies unattended in 24h
+- ~2-3 days to build properly with current pipeline as foundation
+
+**[Tier-3] Live monitoring infrastructure**
+- Once deployed (FundedNext, future Lucid), track rolling Sharpe per strategy
+- Alert on regime breakdown, signal decay, correlation regime change
+- Renaissance's continuous decay monitoring was core to their 60% returns
+- Reference: AFML Ch 14 (backtest statistics for live monitoring)
+
+**[Tier-3] NT8 port + futures validation (Path B)**
+- Port surviving CFD strategies to NinjaScript C#
+- Re-validate on Kinetick free futures tick data (NQ, GC, ES, MGC, MNQ)
+- Required for Lucid + Apex deployment
+- Major project: each strategy needs intraday redesign too (no overnight on futures)
+
+**[Tier-3] Cross-broker validation**
+- Run same strategy on multiple brokers' tick feeds
+- Catches data quality issues + microstructure dependencies
+- Adds: FBS / IC Markets demo accounts as second broker
+
+### Books to acquire (will materially improve what I can build)
+
+**[High priority] López de Prado — "Advances in Financial Machine Learning" (2018)**
+- Addresses every methodological pitfall we're hitting
+- Topics needed: false discovery in backtests, fractional differentiation,
+  meta-labeling for signal filtering, sample-uniqueness weighting, Hierarchical
+  Risk Parity, deflated Sharpe ratio (replaces our naive t-test)
+- Single most important book for the work
+
+**[High priority] Carver — "Smart Portfolios" (2017)**
+- Explicit math for portfolio construction
+- Risk parity, handcrafted portfolios, diversification multipliers
+- Bridges "have strategies" → "have a portfolio"
+
+**[Medium] Pardo — "The Evaluation and Optimization of Trading Strategies" (2008)**
+- Canonical text on proper walk-forward methodology
+- Would directly inform G4c upgrade
+
+**[Lower priority] Zuckerman — "The Man Who Solved the Market"**
+- Renaissance Technologies story (inspiration + realistic expectations)
+
+**[Lower priority] López de Prado — "Machine Learning for Asset Managers" (2020)**
+- AFML follow-up, focused on portfolio managers
+
+### Strategy sourcing (parallel to validation work)
+
+**Find new strategy candidates from Discord/Zenom/forums**
+- Triage per `strategy_intake_workflow` memory entry
+- Source: .mq5 source > .set settings > .ex5 only
+- Always check Discord screenshot for actual settings used (not EA defaults)
+- Always note source community/author for credit + provenance
+
+**Brain-dump of user's 3 years of discretionary observations**
+- Specific session/asset/setup combos worth coding
+- Plan B from earlier session — generate strategy ideas from real trader's experience
+- Higher-quality source than forum scrapes
+- User to schedule a brain-dump session
 
 ### Immediate next session (high priority)
 
-**G4d Holdout tool — build it**
-- Last missing tool from Discord gate framework
-- Annual rollover protocol: hold out the latest year as unseen, IS goes back further
-- Each Jan, oldest holdout year joins IS, newest year becomes the next holdout
-- Should be similar shape to walk_forward.py but with explicit IS/OOS rollover
+**G4d Holdout tool — build it (DONE — running now)**
+- Built `tools/holdout_test.py` 2026-05-03
+- 12 backtests running on all 6 surviving specs
+- IS: from spec start_date to 2025.04.06; OOS: 2025.04.06 → 2026.04.06
+- Verdicts: PASS / WARN (>50% Sharpe drop) / FAIL (PF<1.0) / COLLAPSE (Sharpe<0)
 
 **Re-run cross-strategy correlation matrix with all 6 specs**
 - correlation_survivors.py needs BLHCLC trade CSV added
