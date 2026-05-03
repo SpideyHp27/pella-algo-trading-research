@@ -1082,6 +1082,46 @@ Updated deployable Pella portfolio (6 specs across 5 strategies):
 
 Three Tier-1 specs that pass G4b: TT NDX (effectively, its calendar logic is param-light) and BreakoutLoopHCLC. ChBVIP v0.4 passed walk-forward but hasn't been G4b-tested yet — should run that next session for completeness.
 
+## G4d Holdout — THE DECISIVE GATE (2026-05-03 11:25)
+
+Built `tools/holdout_test.py` and ran on all 6 surviving specs. Methodology: split each spec's full window into IS (everything before 2025-04-06, used for all prior validation) and OOS (1 year of data the strategy was NEVER tested on during research). The most direct curve-fit detector — what López de Prado considers the only gate that actually matters.
+
+| Spec | IS Sharpe | OOS Sharpe | Δ % | OOS PF | Verdict |
+|---|---|---|---|---|---|
+| ChBVIP v0.4 USDJPY H1 | 1.06 | **2.45** | +130% | 2.95 | PASS |
+| ChBVIP v0.4 XAUUSD H1 | 1.42 | **2.77** | +95% | 2.26 | PASS |
+| TT NDX H1 PCT | 1.25 | 1.39 | +11% | 2.07 | PASS |
+| IDNR4 v0.3 XAUUSD H4 | 1.06 | 1.45 | +37% | 2.29 | PASS (promotes T2 → T1) |
+| PellaMarubozu XAUUSD M5 | 0.82 | **3.60** | +340% | 1.78 | PASS (promotes T2 → T1) |
+| **BLHCLC NDX D1+H4** | **1.87** | **-0.07** | **-104%** | **0.98** | **COLLAPSE** (shelved) |
+
+**THE BIG FINDING: BreakoutLoopHCLC COLLAPSED.** A strategy that had passed:
+- Universal prop gates (6/6)
+- G4b param sensitivity (9/10 PASS, 1 WARN)
+- Cross-TF (bit-identical across M15/H1/D1)
+- Statistical (p-HAC < 0.001)
+
+...failed G4d. IS Sharpe 1.87 → OOS Sharpe -0.07. The strategy was curve-fit to its specific 2019-2025 market regime; the parameter values themselves (lookback=55, EMA=50, TP=60) were tuned to produce that result. G4b couldn't catch this because G4b only tests parameter perturbations within the IS data — robust to its own parameters but NOT robust to truly fresh data.
+
+User's earlier instinct ("this strategy seems curve fitted") was correct. We dodged a deployment trap that would have lost money on the live $94k FundedNext account.
+
+**Validation of methodology:** the simplest gate (just hold out 1 year of data) caught what 7 more sophisticated gates missed. Building it was 30 minutes; running it was 25 minutes. ROI on this single tool is enormous.
+
+**Other 5 specs all generalized BETTER on holdout** (most got significantly higher OOS Sharpe than IS), suggesting they capture genuine edges that strengthened in 2025-2026 market conditions. Notable: PellaMarubozu (clean-room build I wrote) went from IS Sharpe 0.82 to OOS Sharpe 3.60 — opposite of curve-fit signature, real edge.
+
+## Updated deployable Pella portfolio (5 specs, all Tier-1, all G4d-validated)
+
+| # | Strategy | Symbol | TF | Mode | OOS Sharpe |
+|---|---|---|---|---|---|
+| 1 | ChBVIP v0.4 | USDJPY | H1 | PCT 1% + vol-trail 0.20 | 2.45 |
+| 2 | ChBVIP v0.4 | XAUUSD | H1 | PCT 1% + vol-trail 0.20 | 2.77 |
+| 3 | TT NDX | NDX | H1/H4 | FIXED 0.10 or PCT 1% | 1.39 |
+| 4 | IDNR4 v0.3 | XAUUSD | H4 | PCT 1% | 1.45 |
+| 5 | PellaMarubozu v0.1 | XAUUSD | M5 + NY 17-19 | PCT 0.5% | 3.60 |
+
+SHELVED:
+- BreakoutLoopHCLC v1.0 — failed G4d holdout (most important gate)
+
 ## Aristhrottle dashboard — can't drive it from Claude Code
 
 User shared `https://aristhrottle.netlify.app/` (a friend built it — has prop simulator, journal, MC, trade analysis, correlation matrix, portfolio overview). Tried WebFetch — landing page returns "Aristhrottle PRO" only, everything behind auth. The OAuth callback URL the user shared (?code=...&state=...) is single-use and was already consumed by their browser.
