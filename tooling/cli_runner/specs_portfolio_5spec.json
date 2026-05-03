@@ -1,0 +1,17 @@
+[
+  {"label": "ChBVIP_USDJPY_v04",
+   "csv": "C:/Lab/NT8Bridge/Results/cli_validation/20260502_171816/trades_ChBVIP_USDJPY_PCT1.csv",
+   "asset_class": "FX_major"},
+  {"label": "ChBVIP_XAUUSD_v04",
+   "csv": "C:/Lab/NT8Bridge/Results/cli_validation/20260502_171816/trades_ChBVIP_XAUUSD_PCT1.csv",
+   "asset_class": "metal"},
+  {"label": "TT_NDX_PCT",
+   "csv": "C:/Lab/NT8Bridge/Results/cli_validation/20260502_173436/trades_TT_NDX_PCT1.csv",
+   "asset_class": "equity_index"},
+  {"label": "IDNR4_XAUUSD_H4",
+   "csv": "C:/Lab/NT8Bridge/Results/cli_validation/20260502_182352/trades_IDNR4_XAUUSD_H4_PCT1.csv",
+   "asset_class": "metal"},
+  {"label": "PellaMarubozu_XAUUSD",
+   "csv": "C:/Lab/NT8Bridge/Results/cli_validation/20260502_235550/trades_MBZ_XAU_M5NY_BASE_PCT05.csv",
+   "asset_class": "metal"}
+]
