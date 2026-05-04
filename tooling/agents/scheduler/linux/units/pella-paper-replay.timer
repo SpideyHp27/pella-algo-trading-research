@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella paper-replay agent — daily at 23:00 UTC
+Requires=pella-paper-replay.service
+
+[Timer]
+OnCalendar=*-*-* 23:00:00 UTC
+AccuracySec=1m
+Persistent=true
+Unit=pella-paper-replay.service
+
+[Install]
+WantedBy=timers.target

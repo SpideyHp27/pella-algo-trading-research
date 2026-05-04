@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella discovery agent — nightly at 00:30 UTC
+Requires=pella-discovery.service
+
+[Timer]
+OnCalendar=*-*-* 00:30:00 UTC
+AccuracySec=1m
+Persistent=true
+Unit=pella-discovery.service
+
+[Install]
+WantedBy=timers.target

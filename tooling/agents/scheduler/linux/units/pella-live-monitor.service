@@ -1,0 +1,13 @@
+[Unit]
+Description=Pella live monitor (one-shot poll of MT5 + push to Aristhrottle)
+Documentation=file://__PELLA_LAB_ROOT__/NT8Bridge/scheduler/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__PELLA_LAB_ROOT__
+ExecStart=__PELLA_PYTHON__ __PELLA_LAB_ROOT__/NT8Bridge/tools/live_monitor_agent.py
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=900

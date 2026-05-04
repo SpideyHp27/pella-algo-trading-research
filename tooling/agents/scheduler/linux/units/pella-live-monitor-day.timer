@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella live monitor — hourly during 09:00-22:00 UTC
+Requires=pella-live-monitor.service
+
+[Timer]
+OnCalendar=*-*-* 09..22:00:00 UTC
+AccuracySec=30s
+Persistent=true
+Unit=pella-live-monitor.service
+
+[Install]
+WantedBy=timers.target

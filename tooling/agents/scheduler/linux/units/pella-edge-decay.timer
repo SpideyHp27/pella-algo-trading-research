@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella edge-decay watchdog — daily at 22:30 UTC (after US close)
+Requires=pella-edge-decay.service
+
+[Timer]
+OnCalendar=*-*-* 22:30:00 UTC
+AccuracySec=1m
+Persistent=true
+Unit=pella-edge-decay.service
+
+[Install]
+WantedBy=timers.target

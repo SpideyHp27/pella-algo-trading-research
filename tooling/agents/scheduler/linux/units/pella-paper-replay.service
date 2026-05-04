@@ -1,0 +1,13 @@
+[Unit]
+Description=Pella paper-replay agent (signal-vs-fill divergence scan)
+Documentation=file://__PELLA_LAB_ROOT__/NT8Bridge/scheduler/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__PELLA_LAB_ROOT__
+ExecStart=__PELLA_PYTHON__ __PELLA_LAB_ROOT__/NT8Bridge/tools/paper_replay_agent.py --ignore-no-signals
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=1800

@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella live monitor — single overnight fire at 04:00 UTC
+Requires=pella-live-monitor.service
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 UTC
+AccuracySec=30s
+Persistent=true
+Unit=pella-live-monitor.service
+
+[Install]
+WantedBy=timers.target

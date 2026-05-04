@@ -1,0 +1,12 @@
+[Unit]
+Description=Pella cross-pollinator — weekly Sunday 18:00 UTC
+Requires=pella-cross-pollinator.service
+
+[Timer]
+OnCalendar=Sun *-*-* 18:00:00 UTC
+AccuracySec=1m
+Persistent=true
+Unit=pella-cross-pollinator.service
+
+[Install]
+WantedBy=timers.target

@@ -33,3 +33,8 @@ local/
 private/
 .secret
 *.env
+
+# Agent runtime config — INNER ONLY (account IDs, magic numbers, baseline
+# Sharpe/PF, broker paths). Each operator maintains their own copy locally.
+agent_config.yaml
+deployment_config.json
