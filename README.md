@@ -2,271 +2,95 @@
 
 # PELLA
 
-**Algorithmic Trading Research and Backtesting Pipeline**
+### Systematic Trading Research Engine
 
-*Strategy is the asset. The venue is just where you fight.*
+*Find statistical edges — and bring the discipline to reject the ones that aren't real.*
 
-![status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)
-![platforms](https://img.shields.io/badge/platforms-MT5%20%7C%20NT8-blue?style=for-the-badge)
-![pipeline](https://img.shields.io/badge/pipeline-9%20stages-cyan?style=for-the-badge)
-![governance](https://img.shields.io/badge/governance-SPEC%2FCODEGEN%2FAUDIT-purple?style=for-the-badge)
-![cross--validation](https://img.shields.io/badge/cross--validation-mandatory-red?style=for-the-badge)
-![license](https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge)
+![focus](https://img.shields.io/badge/focus-quant_research-0ea5e9?style=flat-square)
+![method](https://img.shields.io/badge/rigor-DSR_%7C_bootstrap_%7C_walk--forward-8b5cf6?style=flat-square)
+![data](https://img.shields.io/badge/data-6M%2B_bars_%7C_multi--asset-0ea5e9?style=flat-square)
+![ai](https://img.shields.io/badge/built-AI--native_(agentic)-8b5cf6?style=flat-square)
+![platforms](https://img.shields.io/badge/platforms-MT5_%7C_NT8_%7C_Python-475569?style=flat-square)
+![license](https://img.shields.io/badge/license-MIT-475569?style=flat-square)
 
 </div>
 
 ---
 
-> Codename **Pella** after the ancient capital of Macedonia, birthplace of Alexander the Great. Short, memorable, and a reminder that strategy is the asset; the venue is just where you fight.
+> Codename **Pella**, after the ancient capital of Macedonia. The thesis: **the strategy is the asset; the venue is just where you fight.**
 
-An end-to-end pipeline for designing, backtesting, and validating systematic trading strategies across MetaTrader 5 and NinjaTrader 8, with cross-platform validation as a hard gate before deployment.
+An end-to-end research engine for designing, backtesting, and **statistically validating** systematic trading strategies across equities and futures. The headline isn't a magic strategy — it's the **process**: a rigorous screen that treats every promising backtest as guilty until proven innocent, plus an AI-automation layer that makes the research compound instead of evaporate.
 
-The core thesis, arrived at after a week of fighting data-sourcing problems on the futures side:
-
-> *"It's not about which prop firm. It's about coming up with a working model. The strategy is the asset, the prop firm is just a venue."*
-
-That single insight pivoted the whole project from a chase-the-cheapest-prop model into a build-the-strategy-first model.
+Most "edges" are overfitting, survivorship bias, or plain market beta in a costume. This engine is built to *catch that* — Deflated Sharpe Ratios, bootstrap confidence intervals, strict out-of-sample splits, survivorship-bias-free universes, and beta-stripping — so the output is a small number of trustworthy findings instead of a large number of seductive lies.
 
 ---
 
 ## System Architecture
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1e293b','primaryTextColor':'#e2e8f0','primaryBorderColor':'#06b6d4','lineColor':'#06b6d4','secondaryColor':'#0f172a','tertiaryColor':'#334155','background':'#0f172a','mainBkg':'#1e293b','clusterBkg':'#0f172a','clusterBorder':'#06b6d4','edgeLabelBackground':'#1e293b','fontSize':'14px'}}}%%
-flowchart LR
-    subgraph IDEAS["RESEARCH INPUTS"]
-        direction TB
-        I1(["Hypotheses"])
-        I2(["Papers"])
-        I3(["Community signals"])
-    end
+<div align="center"><img src="assets/architecture.svg" alt="Five-stage pipeline: Data, Research, Validation, Portfolio, Deploy, with an AI automation layer" width="900"></div>
 
-    subgraph PIPE["VALIDATION PIPELINE"]
-        direction TB
-        S0[/"Stage 0 - SPEC"/]
-        S1["Stage 1 - Prototype"]
-        S2["Stage 2 - Cost Overlay"]
-        S3{"Stage 3 - Holdout"}
-        S4{"Stage 4 - Sensitivity"}
-        S5["Stage 5 - EA Port"]
-        S6["Stage 6 - Correlation"]
-        S7["Stage 7 - Prop Sim"]
-    end
-
-    subgraph PLAT["DUAL PLATFORM"]
-        direction TB
-        MT5[("MT5 Tester<br/>tick data")]
-        NT8[("NT8 Tester<br/>bar data")]
-    end
-
-    subgraph OUT["DEPLOY DECISION"]
-        direction TB
-        REJ[/"Rejected<br/>logged"/]
-        T2["Tier-2<br/>watchlist"]
-        DEP(["Deploy"])
-    end
-
-    IDEAS ==> PIPE
-    PIPE <==> PLAT
-    PIPE ==> OUT
-
-    classDef inp fill:#1e293b,stroke:#06b6d4,color:#e2e8f0
-    classDef stage fill:#0f172a,stroke:#22d3ee,color:#a5f3fc
-    classDef plat fill:#1e293b,stroke:#a78bfa,color:#ddd6fe
-    classDef out fill:#0f172a,stroke:#34d399,color:#a7f3d0
-
-    class I1,I2,I3 inp
-    class S0,S1,S2,S3,S4,S5,S6,S7 stage
-    class MT5,NT8 plat
-    class REJ,T2,DEP out
-```
-
-**Why both platforms:** No single broker has clean data on both CFDs and futures. Building strategies on one and porting to the other forces clean separation of strategy logic from broker quirks, and produces a built-in cross-validation layer. A strategy that holds up under tick data on Broker A *and* on Broker B is more likely to hold up live.
+**Why two platforms (MT5 + NT8):** no single broker has clean data on both CFDs and futures. Building on one and porting to the other forces clean separation of strategy logic from broker quirks — and gives a built-in cross-validation layer. A strategy that holds up under tick data on Broker A *and* Broker B is far more likely to hold up live.
 
 ---
 
-## Validation Gauntlet
+## The Validation Gauntlet
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1e293b','primaryTextColor':'#e2e8f0','primaryBorderColor':'#06b6d4','lineColor':'#22d3ee','clusterBkg':'#0f172a','clusterBorder':'#06b6d4','fontSize':'13px'}}}%%
-flowchart TD
-    START(["NEW STRATEGY IDEA"]) ==> S0[/"Stage 0 - SPEC<br/>Formal hypothesis"/]
-    S0 ==> S1["Stage 1 - Python Prototype<br/>Multi-year backtest"]
-    S1 ==> G1{{"5 GATES<br/>PF 1.30 / Sh 1.0<br/>DD 8 / N 100<br/>MC p95 8"}}
-    G1 ==>|"FAIL"| S15{{"Stage 1.5 - Sweep<br/>TF x symbol x RP"}}
-    S15 ==> G15{"Any combo<br/>5/5 PASS?"}
-    G15 ==>|"YES"| S2
-    G15 ==>|"NO"| DEAD1[/"Logged dead end"/]
-    G1 ==>|"PASS"| S2["Stage 2 - Cost Overlay<br/>Spread + slip"]
-    S2 ==> S3["Stage 3 - Holdout<br/>OOS Sharpe 50pct IS"]
-    S3 ==> G3{"Holdout?"}
-    G3 ==>|"FAIL"| DEAD2[/"Tier-2 or shelf"/]
-    G3 ==>|"PASS"| S4["Stage 4 - Sensitivity<br/>plus minus 25 each param"]
-    S4 ==> G4{"6+/8 variants<br/>PASS?"}
-    G4 ==>|"NO"| OVERFIT[/"Overfit risk"/]
-    G4 ==>|"YES"| S5["Stage 5 - MT5 EA Port"]
-    S5 ==> S6["Stage 6 - Correlation<br/>r below 0.60"]
-    S6 ==> S7["Stage 7 - Prop Simulator"]
-    S7 ==> S8["Stage 8 - Live Deploy<br/>Half-RP first trades"]
-    S8 ==> LIVE(["LIVE"])
+<div align="center"><img src="assets/gauntlet.svg" alt="Validation gauntlet: backtest, core gates, out-of-sample, deflated Sharpe, beta strip; rejected paths logged" width="900"></div>
 
-    classDef gate fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    classDef stage fill:#0f172a,stroke:#22d3ee,color:#a5f3fc
-    classDef dead fill:#450a0a,stroke:#dc2626,color:#fecaca
-    classDef live fill:#064e3b,stroke:#10b981,color:#a7f3d0
-
-    class G1,G15,G3,G4 gate
-    class S0,S1,S2,S15,S4,S5,S6,S7,S8 stage
-    class DEAD1,DEAD2,OVERFIT dead
-    class LIVE,START live
-```
-
-A strategy does not advance unless it passes ALL gates at every stage. Most published strategies don't survive the gauntlet, let alone the cross-platform check.
+The integrity of the engine is measured by what it **throws away**. An 80-strategy library run through this screen produced **zero** standalone survivors — the crude profit-factor view had flagged 150 "winners." Catching that gap *is* the product.
 
 ---
 
-## Engineering Discipline
+## AI Research Flywheel
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1e293b','primaryTextColor':'#e2e8f0','primaryBorderColor':'#a78bfa','lineColor':'#a78bfa','clusterBkg':'#0f172a','fontSize':'13px'}}}%%
-flowchart LR
-    USER(["Trader<br/>intent"]) ==> SPEC[/"SPEC<br/>baseline + acceptance"/]
-    SPEC ==> CODEGEN["CODEGEN<br/>implements only the SPEC"]
-    CODEGEN ==> AUDIT{{"AUDIT<br/>read-only verification<br/>PASS or FAIL"}}
-    AUDIT ==>|"PASS"| MERGE(["Merge"])
-    AUDIT ==>|"FAIL"| LOOP["Halt + report"]
-    LOOP -.->|"loop"| SPEC
+<div align="center"><img src="assets/flywheel.svg" alt="Compounding loop: sources, ingest, synthesize, knowledge vault, hypotheses, engine, feedback" width="900"></div>
 
-    classDef contract fill:#1e293b,stroke:#a78bfa,color:#ddd6fe
-    classDef gate fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    classDef ok fill:#064e3b,stroke:#10b981,color:#a7f3d0
-
-    class SPEC,CODEGEN contract
-    class AUDIT gate
-    class MERGE,USER ok
-```
-
-A four-document governance contract on every AI-assisted code change:
-
-- **SPEC** — what is being changed, with explicit baseline and acceptance criteria
-- **CODEGEN** — implements only what the SPEC declared, nothing else
-- **AUDIT** — read-only verification, PASS or FAIL only
-
-It's easy for AI tools to "helpfully" rename variables, add safety checks, or reorganize logic when asked to fix something narrow. On strategy code that handles real money, that kind of silent change is dangerous. The contract turns the AI from a creative collaborator into a disciplined tool that does exactly what's specified, halts when ambiguous, and can audit its own work without modifying it.
+Built with **AI-second execution** — an LLM agent directed end-to-end to write the pipelines, run the analyses, and draft the synthesis, while every claim is verified at the source and judged against the gauntlet. The agent does the volume; the human owns the judgment.
 
 ---
 
-## Methodology
+## Featured Result — an edge that *survived*
 
-Every strategy goes through this pipeline. No shortcuts, no "looks fine, deploy."
+<div align="center"><img src="assets/result.svg" alt="Out-of-sample Sharpe rising as the in-play relative-volume filter tightens" width="900"></div>
 
-1. **Research** — write the hypothesis in plain English. What macro/structural reason should this work? What would prove it wrong? Logged as one row in `research/INDEX.md`.
-2. **Build** — implement the strategy. Comment the entry / exit / invalidation rules in source so future-me can read it without rerunning the code.
-3. **Backtest** at tick resolution where possible. MT5 Strategy Tester with "Every tick based on real ticks" is the gold standard for forex/CFDs.
-4. **Quality gates** (must pass all):
-   - Profit factor > 1.3
-   - Sharpe > 1.0
-   - Max drawdown < 25%
-   - Recovery factor > 3
-   - At least 100 trades
-   - Average trade hold time > 5 seconds (avoids microscalping rules)
-5. **Cross-validation** — re-run the same logic on the other platform with that platform's data feed. If the result diverges meaningfully between platforms, the strategy isn't real — it's a data artifact.
-6. **Simulator** — run on a paper-trading prop simulator before any live deployment.
-7. **Deploy** — only after the strategy survives all of the above.
-
-Conservative on purpose.
+A faithful intraday **Opening-Range Breakout on "stocks-in-play"** (high relative volume), tested on **6 years of 5-minute equity data**, long-only, with stops at the opposite side of the range and conservative stop-first exits, **net of transaction costs**. The edge **rises monotonically as the in-play filter tightens** — the signature of a real structural effect, not a lucky parameter — and held up *out-of-sample stronger than in-sample*. **Framed honestly: a validated research lead, not a deployed strategy**; open caveats (volume-feed quality, sample size at the extremes, slippage stress) are documented, not hidden.
 
 ---
 
-## Strategy Taxonomy
+## Engineering Discipline — governed AI code changes
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#1e293b','primaryTextColor':'#e2e8f0','primaryBorderColor':'#22d3ee','lineColor':'#22d3ee','fontSize':'13px'}}}%%
-mindmap
-  root((PELLA<br/>Strategy<br/>Pool))
-    Trend and Breakout
-      Channel breakout VIP
-      Keltner breakout
-      Gold trend breakout
-      Turtle Soup Plus One
-    Mean Reversion
-      IBS pullback
-      RSI(2) Connors
-      Marubozu reversion
-    Range and Calendar
-      Inside Day NR4
-      Tuesday Turnaround NDX
-    Meta and Portfolio
-      MetaEA orchestrator
-      Correlation gate
-      Capacity-aware sizer
-```
+<div align="center"><img src="assets/governance.svg" alt="SPEC to CODEGEN to AUDIT contract with a fail-loop back to SPEC" width="900"></div>
+
+AI tools "helpfully" rename variables and add silent logic when asked for narrow fixes — dangerous on code that handles money. A three-document contract (**SPEC → CODEGEN → AUDIT**) turns the AI from a creative collaborator into a disciplined tool that does exactly what's specified, halts when ambiguous, and audits its own work without modifying it.
 
 ---
 
-## What's Working Today
+## What's Demonstrated Here
 
-**Pipeline is end-to-end automated.** Backtests run via HTTP / CLI, no manual clicking through Strategy Tester or Strategy Analyzer dialogs. Results land as JSON, get parsed into the result archive, and compared against the gates automatically.
-
-**First validated backtest** is in `results/KeltnerBreakout/`. A Keltner-channel breakout strategy run against five years of forex tick data:
-
-| Metric | Result | Gate | Pass |
-|---|---|---|---|
-| Profit factor | 1.16 | > 1.3 | FAIL |
-| Sharpe ratio | 1.64 | > 1.0 | PASS |
-| Max equity drawdown | 6.64% | < 25% | PASS |
-| Recovery factor | 5.16 | > 3 | PASS |
-| Total trades | 1,429 | > 100 | PASS |
-| Avg trade hold | 8h 25m | > 5s | PASS |
-
-Passes 6 of 7 gates — sharpe is strong, drawdown excellent, but profit factor misses by 0.14. **Not a deployment candidate as-is.** Useful as a known-good baseline against which to measure new strategies.
-
-A side-effect of running this strategy: it validated the entire pipeline. Trade count produced (1,429) matched the original author's stated count (1,423) within 0.4% on the same instrument and date range. That close a match means our pipeline, our tick data feed, and our execution model all agree with theirs — i.e., when we get a strategy that *does* pass gates, the result is trustworthy.
+- **Quantitative rigor** — Deflated Sharpe Ratio, bootstrap confidence intervals, walk-forward / out-of-sample validation, effective-N multiple-testing correction, survivorship-bias control, beta-vs-alpha decomposition.
+- **Data engineering** — automated multi-source pipelines (Databento, Alpaca, yfinance), point-in-time universes, 6M+ bar datasets, parquet storage.
+- **Portfolio construction** — correlation/decorrelation analysis, risk-parity and maximum-diversification weighting, market-neutral construction.
+- **AI-native execution** — LLM-agent orchestration to build tooling and automate research, plus a self-improving ingestion → synthesis → knowledge-graph workflow.
+- **Cross-platform engineering** — MQL5 (MetaTrader 5) and NinjaScript/C# (NinjaTrader 8), with honest tick-vs-bar exit validation that has caught and falsified inflated backtests.
+- **Intellectual honesty** — the project's defining trait: rejecting your own best-looking results when the statistics don't hold.
 
 ---
 
-## Project Journey
+## Repository Map
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'fontSize':'13px'}}}%%
-journey
-    title From idea to deployable systematic edge
-    section Research
-      Hypothesis logged: 5: Trader
-      Literature scan: 4: Trader
-      SPEC drafted: 5: Trader
-    section Build
-      Python prototype: 5: Trader, AI
-      Backtest 2018-now: 5: System
-      Five-gate eval: 4: System
-    section Validate
-      Holdout split: 4: System
-      Sensitivity sweep: 4: System
-      Cross-platform port: 3: Trader, AI
-    section Deploy
-      Prop simulator: 4: System
-      Half-risk live: 5: Trader
-      Full-risk live: 5: Trader, System
-```
+| Path | Contents |
+|---|---|
+| `docs/METHODOLOGY.md` | The full validation methodology |
+| `docs/BUILD_JOURNAL.md` | Chronological build log — what was tried, what failed, why it pivoted |
+| `tooling/` | Research, backtest, and automation tooling (methodology-level) |
+| `strategies/` | Sample clean-room strategy implementations |
+| `results/` | Backtest result archives with full metric capture |
+| `assets/` | Diagrams |
+
+> **Public = methodology and tooling only.** Live deployment configs, account identifiers, credentials, and exact production parameters are intentionally excluded.
 
 ---
 
-## What's Next
+## Status
 
-- Re-run a batch of additional MT5 strategies with full metric capture between each (the first batch lost intermediate metrics — pipeline-level lesson, now solved).
-- Get the NT8 path producing its first complete result on Japanese Yen futures (continuous-contract rollover and 24-hour session template are the open variables).
-- Once two or more strategies pass all gates on one platform, take the strongest into cross-validation.
-
----
-
-## Key Files
-
-- `docs/BUILD_JOURNAL.md` — chronological build log: what was tried, what failed, why we pivoted, what we learned
-- `docs/METHODOLOGY.md` — the full version of the pipeline above
-- `results/KeltnerBreakout/RESULT.md` — first validated backtest with all metrics
-
----
-
-## Project Status
-
-**Active.** Documenting publicly as I build. The pipeline is the product; the strategies are samples.
+**Active independent research.** The pipeline is the product; the strategies are samples. Documenting publicly as it's built.

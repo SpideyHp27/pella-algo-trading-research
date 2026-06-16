@@ -1,0 +1,62 @@
+<svg viewBox="0 0 1120 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">AI research flywheel</title>
+  <desc id="d">A compounding loop: sources are ingested, synthesized into a linked knowledge vault, turned into hypotheses, tested by the engine, and fed back.</desc>
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#0d1526"/></linearGradient>
+    <linearGradient id="acc4" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh4" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/></filter>
+  </defs>
+  <rect width="1120" height="430" rx="18" fill="url(#bg4)"/>
+  <rect x="0.5" y="0.5" width="1119" height="429" rx="18" fill="none" stroke="#1e293b"/>
+
+  <text x="44" y="50" fill="#f1f5f9" font-size="20" font-weight="700">AI Research Flywheel</text>
+  <text x="44" y="72" fill="#5d6b86" font-size="12.5">Built AI-second: the agent does the volume, the human owns the judgment.</text>
+
+  <!-- ring (clockwise) cx=300 cy=240 r=128 -->
+  <circle cx="300" cy="240" r="128" fill="none" stroke="url(#acc4)" stroke-width="2" stroke-dasharray="2 6" opacity="0.75"/>
+  <!-- clockwise arrowheads tangent at 4 points -->
+  <g fill="#7aa2e8">
+    <path d="M428 240 l-9 -5 v10 z" transform="rotate(90 428 240)"/>
+    <path d="M300 368 l-9 -5 v10 z" transform="rotate(180 300 368)"/>
+    <path d="M172 240 l-9 -5 v10 z" transform="rotate(270 172 240)"/>
+    <path d="M300 112 l-9 -5 v10 z"/>
+  </g>
+
+  <!-- center label -->
+  <text x="300" y="234" text-anchor="middle" fill="#c4b5fd" font-size="14" font-weight="700">COMPOUNDS</text>
+  <text x="300" y="254" text-anchor="middle" fill="#8593ab" font-size="11.5">smarter each cycle</text>
+
+  <!-- nodes on ring -->
+  <g font-size="12.5" font-weight="600" text-anchor="middle">
+    <g filter="url(#sh4)"><rect x="235" y="93" width="130" height="34" rx="9" fill="#111c30" stroke="#243049"/></g>
+    <text x="300" y="115" fill="#e6edf6">Sources</text>
+
+    <g filter="url(#sh4)"><rect x="350" y="133" width="130" height="34" rx="9" fill="#111c30" stroke="#243049"/></g>
+    <text x="415" y="155" fill="#e6edf6">Ingest</text>
+
+    <g filter="url(#sh4)"><rect x="350" y="263" width="130" height="34" rx="9" fill="#111c30" stroke="#2a2e52"/></g>
+    <text x="415" y="285" fill="#e6edf6">Synthesize</text>
+
+    <g filter="url(#sh4)"><rect x="235" y="353" width="130" height="34" rx="9" fill="#0e1730" stroke="#8b5cf6"/></g>
+    <text x="300" y="375" fill="#c4b5fd">Knowledge Vault</text>
+
+    <g filter="url(#sh4)"><rect x="120" y="263" width="130" height="34" rx="9" fill="#111c30" stroke="#2a2e52"/></g>
+    <text x="185" y="285" fill="#e6edf6">Hypotheses</text>
+
+    <g filter="url(#sh4)"><rect x="120" y="133" width="130" height="34" rx="9" fill="#111c30" stroke="#243049"/></g>
+    <text x="185" y="155" fill="#e6edf6">Research Engine</text>
+  </g>
+
+  <!-- right explanatory column -->
+  <g>
+    <line x1="560" y1="110" x2="560" y2="370" stroke="#1c2740" stroke-width="1"/>
+    <g font-size="13.5">
+      <circle cx="600" cy="132" r="4" fill="#38bdf8"/><text x="618" y="137" fill="#cdd8e8">Ingest papers, X threads, videos — automatically</text>
+      <circle cx="600" cy="178" r="4" fill="#5aa6f0"/><text x="618" y="183" fill="#cdd8e8">Synthesize with LLM + NotebookLM — cited extraction</text>
+      <circle cx="600" cy="224" r="4" fill="#8b5cf6"/><text x="618" y="229" fill="#cdd8e8">Land as auto-tagged, linked notes (graph view)</text>
+      <circle cx="600" cy="270" r="4" fill="#9580f0"/><text x="618" y="275" fill="#cdd8e8">Turn into testable hypotheses for the engine</text>
+      <circle cx="600" cy="316" r="4" fill="#a78bfa"/><text x="618" y="321" fill="#cdd8e8">Results feed back — every source sharpens the next</text>
+    </g>
+    <text x="600" y="362" fill="#5d6b86" font-size="11.5">Research stops evaporating between sessions; the knowledge base compounds.</text>
+  </g>
+</svg>
