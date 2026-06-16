@@ -21,7 +21,7 @@
     <text x="589" y="84" fill="#e6edf6">CODEGEN</text><text x="589" y="100" fill="#7587a3" font-size="10.5" font-weight="500">implements only the SPEC</text>
 
     <g filter="url(#sh5)"><rect x="742" y="62" width="170" height="46" rx="10" fill="#0e1730" stroke="#8b5cf6"/></g>
-    <text x="827" y="82" fill="#c4b5fd">AUDIT</text><text x="827" y="98" fill="#8a7cb8" font-size="10.5" font-weight="500">read-only · PASS / FAIL</text>
+    <text x="827" y="82" fill="#c4b5fd">AUDIT</text><text x="827" y="98" fill="#8a7cb8" font-size="10.5" font-weight="500">read-only / PASS / FAIL</text>
 
     <g filter="url(#sh5)"><rect x="980" y="64" width="92" height="42" rx="10" fill="#111c30" stroke="#38335f"/></g>
     <text x="1026" y="90" fill="#c4b5fd">Merge</text>
@@ -37,5 +37,5 @@
   <!-- fail loop: AUDIT down, back to SPEC -->
   <path d="M827 108 V 150 H 351 V 108" stroke="#3a4760" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/>
   <path d="M351 110 l-5 9 h10 z" fill="#3a4760"/>
-  <text x="589" y="166" text-anchor="middle" fill="#6b7a96" font-size="11">FAIL → halt + report → loop</text>
+  <text x="589" y="166" text-anchor="middle" fill="#6b7a96" font-size="11">FAIL -> halt + report -> loop</text>
 </svg>

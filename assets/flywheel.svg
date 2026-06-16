@@ -51,11 +51,11 @@
   <g>
     <line x1="560" y1="110" x2="560" y2="370" stroke="#1c2740" stroke-width="1"/>
     <g font-size="13.5">
-      <circle cx="600" cy="132" r="4" fill="#38bdf8"/><text x="618" y="137" fill="#cdd8e8">Ingest papers, X threads, videos — automatically</text>
-      <circle cx="600" cy="178" r="4" fill="#5aa6f0"/><text x="618" y="183" fill="#cdd8e8">Synthesize with LLM + NotebookLM — cited extraction</text>
+      <circle cx="600" cy="132" r="4" fill="#38bdf8"/><text x="618" y="137" fill="#cdd8e8">Ingest papers, X threads, videos - automatically</text>
+      <circle cx="600" cy="178" r="4" fill="#5aa6f0"/><text x="618" y="183" fill="#cdd8e8">Synthesize with LLM + NotebookLM - cited extraction</text>
       <circle cx="600" cy="224" r="4" fill="#8b5cf6"/><text x="618" y="229" fill="#cdd8e8">Land as auto-tagged, linked notes (graph view)</text>
       <circle cx="600" cy="270" r="4" fill="#9580f0"/><text x="618" y="275" fill="#cdd8e8">Turn into testable hypotheses for the engine</text>
-      <circle cx="600" cy="316" r="4" fill="#a78bfa"/><text x="618" y="321" fill="#cdd8e8">Results feed back — every source sharpens the next</text>
+      <circle cx="600" cy="316" r="4" fill="#a78bfa"/><text x="618" y="321" fill="#cdd8e8">Results feed back - every source sharpens the next</text>
     </g>
     <text x="600" y="362" fill="#5d6b86" font-size="11.5">Research stops evaporating between sessions; the knowledge base compounds.</text>
   </g>

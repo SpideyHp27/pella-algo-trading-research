@@ -19,7 +19,7 @@
   <text x="44" y="54" fill="#f1f5f9" font-size="27" font-weight="700" letter-spacing="3">PELLA</text>
   <rect x="44" y="66" width="150" height="3" rx="1.5" fill="url(#accent)"/>
   <text x="204" y="53" fill="#93a4bf" font-size="14" font-weight="500">Systematic Trading Research Engine</text>
-  <text x="44" y="90" fill="#5d6b86" font-size="12.5">Find statistical edges — and the discipline to reject the ones that aren't real.</text>
+  <text x="44" y="90" fill="#5d6b86" font-size="12.5">Find statistical edges - and the discipline to reject the ones that aren't real.</text>
 
   <!-- stage cards: 5 x width 190 (last 176), gap 24, start 44, y 142 -->
   <g>
@@ -27,24 +27,24 @@
     <rect x="44" y="142" width="190" height="4" rx="2" fill="url(#accent)"/>
     <text x="62" y="176" fill="#56b4f0" font-size="13" font-weight="700">01</text>
     <text x="62" y="202" fill="#e6edf6" font-size="17" font-weight="700">DATA</text>
-    <text x="62" y="230" fill="#93a4bf" font-size="12.5">Futures · equities</text>
-    <text x="62" y="250" fill="#93a4bf" font-size="12.5">6yr 5-min · daily</text>
-    <text x="62" y="277" fill="#5d6b86" font-size="11">Databento · Alpaca · yfinance</text>
+    <text x="62" y="230" fill="#93a4bf" font-size="12.5">Futures / equities</text>
+    <text x="62" y="250" fill="#93a4bf" font-size="12.5">6yr 5-min / daily</text>
+    <text x="62" y="277" fill="#5d6b86" font-size="11">Databento / Alpaca / yfinance</text>
 
     <g filter="url(#sh)"><rect x="258" y="142" width="190" height="150" rx="12" fill="#111c30" stroke="#243049"/></g>
     <rect x="258" y="142" width="190" height="4" rx="2" fill="url(#accent)"/>
     <text x="276" y="176" fill="#62a6ee" font-size="13" font-weight="700">02</text>
     <text x="276" y="202" fill="#e6edf6" font-size="17" font-weight="700">RESEARCH</text>
-    <text x="276" y="230" fill="#93a4bf" font-size="12.5">Features · factors</text>
+    <text x="276" y="230" fill="#93a4bf" font-size="12.5">Features / factors</text>
     <text x="276" y="250" fill="#93a4bf" font-size="12.5">Honest-exit backtests</text>
-    <text x="276" y="277" fill="#5d6b86" font-size="11">signal library · engines</text>
+    <text x="276" y="277" fill="#5d6b86" font-size="11">signal library / engines</text>
 
     <g filter="url(#sh)"><rect x="472" y="142" width="190" height="150" rx="12" fill="#111c30" stroke="#2c2f55"/></g>
     <rect x="472" y="142" width="190" height="4" rx="2" fill="url(#accent)"/>
     <text x="490" y="176" fill="#7e93ee" font-size="13" font-weight="700">03</text>
     <text x="490" y="202" fill="#e6edf6" font-size="17" font-weight="700">VALIDATION</text>
-    <text x="490" y="230" fill="#93a4bf" font-size="12.5">Deflated Sharpe · OOS</text>
-    <text x="490" y="250" fill="#93a4bf" font-size="12.5">Bootstrap · beta-strip</text>
+    <text x="490" y="230" fill="#93a4bf" font-size="12.5">Deflated Sharpe / OOS</text>
+    <text x="490" y="250" fill="#93a4bf" font-size="12.5">Bootstrap / beta-strip</text>
     <text x="490" y="277" fill="#5d6b86" font-size="11">where most ideas die</text>
 
     <g filter="url(#sh)"><rect x="686" y="142" width="190" height="150" rx="12" fill="#111c30" stroke="#322f5a"/></g>
@@ -59,7 +59,7 @@
     <rect x="900" y="142" width="176" height="4" rx="2" fill="#8b5cf6"/>
     <text x="918" y="176" fill="#a78bfa" font-size="13" font-weight="700">05</text>
     <text x="918" y="202" fill="#e6edf6" font-size="17" font-weight="700">DEPLOY</text>
-    <text x="918" y="230" fill="#93a4bf" font-size="12.5">MT5 · NT8</text>
+    <text x="918" y="230" fill="#93a4bf" font-size="12.5">MT5 / NT8</text>
     <text x="918" y="250" fill="#93a4bf" font-size="12.5">Prop-firm sim</text>
     <text x="918" y="277" fill="#5d6b86" font-size="11">cross-platform check</text>
   </g>
@@ -73,7 +73,7 @@
   <g filter="url(#sh)"><rect x="44" y="338" width="1032" height="56" rx="12" fill="#161228" stroke="#3a2f63"/></g>
   <circle cx="78" cy="366" r="7" fill="#8b5cf6"/>
   <text x="98" y="362" fill="#c4b5fd" font-size="14" font-weight="700">AI RESEARCH AUTOMATION</text>
-  <text x="98" y="381" fill="#8a7cb8" font-size="12">Ingest → synthesize → linked knowledge vault → testable hypotheses → compound</text>
+  <text x="98" y="381" fill="#8a7cb8" font-size="12">Ingest -> synthesize -> linked knowledge vault -> testable hypotheses -> compound</text>
   <text x="1056" y="372" text-anchor="end" fill="#6f64a0" font-size="11.5">LLM-agent orchestration</text>
   <path d="M540 338 V 306" stroke="#6d5bb0" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/>
   <path d="M540 300 l-5 9 h10 z" fill="#6d5bb0"/>

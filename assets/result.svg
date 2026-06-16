@@ -8,8 +8,8 @@
   <rect width="1120" height="430" rx="18" fill="url(#bg3)"/>
   <rect x="0.5" y="0.5" width="1119" height="429" rx="18" fill="none" stroke="#1e293b"/>
 
-  <text x="44" y="50" fill="#f1f5f9" font-size="20" font-weight="700">Featured Result — Intraday ORB on Stocks-in-Play</text>
-  <text x="44" y="72" fill="#5d6b86" font-size="12.5">Out-of-sample Sharpe (proxy) vs relative-volume filter · 6yr 5-min equities · long-only · net of cost</text>
+  <text x="44" y="50" fill="#f1f5f9" font-size="20" font-weight="700">Featured Result - Intraday ORB on Stocks-in-Play</text>
+  <text x="44" y="72" fill="#5d6b86" font-size="12.5">Out-of-sample Sharpe (proxy) vs relative-volume filter / 6yr 5-min equities / long-only / net of cost</text>
 
   <!-- y gridlines + labels (0,1,2,3) baseline y=360, 79.4px/unit -->
   <g stroke="#1c2740" stroke-width="1">
@@ -24,7 +24,7 @@
 
   <!-- deployable gate line at Sharpe 1.0 -->
   <line x1="140" y1="281" x2="1060" y2="281" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8"/>
-  <text x="1056" y="275" text-anchor="end" fill="#a78bfa" font-size="11">deployable gate ≈ 1.0</text>
+  <text x="1056" y="275" text-anchor="end" fill="#a78bfa" font-size="11">deployable gate ~ 1.0</text>
 
   <!-- bars: centers 200,340,480,620,760,900 width 80 -->
   <!-- below-gate = muted; above-gate = accent gradient -->
@@ -44,8 +44,8 @@
   </g>
   <!-- x labels -->
   <g fill="#93a4bf" font-size="12.5" text-anchor="middle">
-    <text x="200" y="384">relvol ≥1</text><text x="340" y="384">≥2</text><text x="480" y="384">≥3</text>
-    <text x="620" y="384">≥4</text><text x="760" y="384">≥5</text><text x="900" y="384">≥7</text>
+    <text x="200" y="384">relvol >=1</text><text x="340" y="384">>=2</text><text x="480" y="384">>=3</text>
+    <text x="620" y="384">>=4</text><text x="760" y="384">>=5</text><text x="900" y="384">>=7</text>
   </g>
-  <text x="600" y="408" text-anchor="middle" fill="#5d6b86" font-size="11.5">Monotonic rise as the in-play filter tightens — the signature of a real effect, not a lucky parameter. OOS held stronger than IS. Validated lead, not deployed.</text>
+  <text x="600" y="408" text-anchor="middle" fill="#5d6b86" font-size="11.5">Monotonic rise as the in-play filter tightens - the signature of a real effect, not a lucky parameter. OOS held stronger than IS. Validated lead, not deployed.</text>
 </svg>
